@@ -1,10 +1,5 @@
-Title.TextScaled = true
-Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
-
--- Temporizadorlocal Players = game:GetService("Players")
+local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
 
 local HEIGHT_OFFSET = 5
 local TIMER_DURATION = 40
@@ -42,7 +37,7 @@ Title.TextScaled = true
 Title.Font = Enum.Font.GothamBold
 Title.Parent = MainFrame
 
--- Temporizador
+-- Temporizador (empieza oculto)
 local TimerLabel = Instance.new("TextLabel")
 TimerLabel.Size = UDim2.new(1, 0, 0, 35)
 TimerLabel.Position = UDim2.new(0, 0, 0, -38)
@@ -51,12 +46,14 @@ TimerLabel.TextColor3 = Color3.new(1,1,1)
 TimerLabel.TextScaled = true
 TimerLabel.Font = Enum.Font.GothamBold
 TimerLabel.Text = "Temporizador: 40s"
+TimerLabel.Visible = false
 TimerLabel.Parent = MainFrame
 
 local currentTimer = TIMER_DURATION
 local timerRunning = false
 
 local function startTimer()
+    TimerLabel.Visible = true
     if timerRunning then return end
     timerRunning = true
     currentTimer = TIMER_DURATION
@@ -65,7 +62,7 @@ local function startTimer()
         while currentTimer > 0 and timerRunning do
             TimerLabel.Text = "Temporizador: " .. currentTimer .. "s"
             wait(1)
-            currentTimer = currentTimer - 1
+            currentTimer -= 1
         end
         if currentTimer <= 0 then
             TimerLabel.Text = "Temporizador: 0s"
@@ -96,9 +93,9 @@ for _, stage in ipairs(stages) do
 
     btn.MouseButton1Click:Connect(function()
         TeleportTo(unpack(stage.pos))
-        startTimer()  -- Reinicia el temporizador cada vez que usas un TP
+        startTimer()   -- Solo inicia cuando usas TP
     end)
     y = y + 60
 end
 
-print("🚀 GUI cargada - Temporizador solo se reinicia al usar TP")
+print("🚀 GUI cargada - Temporizador solo al usar TP")
