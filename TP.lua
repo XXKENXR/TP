@@ -12,9 +12,6 @@ local function TeleportTo(x, y, z)
     root.CFrame = CFrame.new(Vector3.new(x, y + HEIGHT_OFFSET, z))
 end
 
--- TP AUTOMÁTICO al cargar
-TeleportTo(7961, 715, 5144)
-
 -- ==================== GUI ====================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "TPGui"
@@ -28,6 +25,44 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 
+-- Hacer la GUI movible
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        update(input)
+    end
+end)
+
+-- Título
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
@@ -37,7 +72,7 @@ Title.TextScaled = true
 Title.Font = Enum.Font.GothamBold
 Title.Parent = MainFrame
 
--- Temporizador 40 segundos
+-- Temporizador
 local TimerLabel = Instance.new("TextLabel")
 TimerLabel.Size = UDim2.new(1, 0, 0, 35)
 TimerLabel.Position = UDim2.new(0, 0, 0, -38)
@@ -60,7 +95,7 @@ spawn(function()
     end
 end)
 
--- Botones de Etapas
+-- Botones
 local stages = {
     {name = "Etapa 15 TP", pos = {7961, 715, 5144}},
     {name = "Etapa 16 TP", pos = {7961, 715, 5144}},
@@ -86,4 +121,4 @@ for _, stage in ipairs(stages) do
     y = y + 60
 end
 
-print("🚀 GUI + Temporizador cargado correctamente")
+print("🚀 GUI movible + Temporizador cargado")
