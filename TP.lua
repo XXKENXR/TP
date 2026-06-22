@@ -10,7 +10,7 @@ ScreenGui.Name = "TPGui"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- ==================== KEY SYSTEM (Estilo bonito) ====================
+-- ==================== KEY SYSTEM ====================
 local KeyFrame = Instance.new("Frame")
 KeyFrame.Size = UDim2.new(0, 350, 0, 220)
 KeyFrame.Position = UDim2.new(0.5, -175, 0.35, 0)
@@ -35,7 +35,7 @@ local KeySubtitle = Instance.new("TextLabel")
 KeySubtitle.Size = UDim2.new(1, 0, 0, 30)
 KeySubtitle.Position = UDim2.new(0, 0, 0, 55)
 KeySubtitle.BackgroundTransparency = 1
-KeySubtitle.Text = "Key en TikTok: LVR0514"
+KeySubtitle.Text = "script by xxkenxr"
 KeySubtitle.TextColor3 = Color3.fromRGB(180, 180, 180)
 KeySubtitle.TextScaled = true
 KeySubtitle.Font = Enum.Font.Gotham
