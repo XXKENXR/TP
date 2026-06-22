@@ -1,9 +1,13 @@
-local Players = game:GetService("Players")
+Title.TextScaled = true
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+-- Temporizadorlocal Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local HEIGHT_OFFSET = 5
+local TIMER_DURATION = 40
 
 local function TeleportTo(x, y, z)
     local character = LocalPlayer.Character
@@ -25,7 +29,7 @@ MainFrame.Position = UDim2.new(0.5, -160, 0.2, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
-MainFrame.Draggable = true   -- Esto ayuda en móvil
+MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
 -- Título
@@ -49,17 +53,26 @@ TimerLabel.Font = Enum.Font.GothamBold
 TimerLabel.Text = "Temporizador: 40s"
 TimerLabel.Parent = MainFrame
 
-local timeLeft = 40
-spawn(function()
-    while true do
-        TimerLabel.Text = "Temporizador: " .. timeLeft .. "s"
-        wait(1)
-        timeLeft = timeLeft - 1
-        if timeLeft <= 0 then
-            timeLeft = 40
+local currentTimer = TIMER_DURATION
+local timerRunning = false
+
+local function startTimer()
+    if timerRunning then return end
+    timerRunning = true
+    currentTimer = TIMER_DURATION
+    
+    spawn(function()
+        while currentTimer > 0 and timerRunning do
+            TimerLabel.Text = "Temporizador: " .. currentTimer .. "s"
+            wait(1)
+            currentTimer = currentTimer - 1
         end
-    end
-end)
+        if currentTimer <= 0 then
+            TimerLabel.Text = "Temporizador: 0s"
+            timerRunning = false
+        end
+    end)
+end
 
 -- Botones
 local stages = {
@@ -83,8 +96,9 @@ for _, stage in ipairs(stages) do
 
     btn.MouseButton1Click:Connect(function()
         TeleportTo(unpack(stage.pos))
+        startTimer()  -- Reinicia el temporizador cada vez que usas un TP
     end)
     y = y + 60
 end
 
-print("🚀 GUI movible cargada (sin TP automático)")
+print("🚀 GUI cargada - Temporizador solo se reinicia al usar TP")
