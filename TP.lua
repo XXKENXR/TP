@@ -92,28 +92,39 @@ function createMainGUI()
     Title2.TextScaled = true
     Title2.Parent = MainFrame
 
-    -- Temporizador normal (arriba del menú)
-    local TimerLabel = Instance.new("TextLabel")
-    TimerLabel.Size = UDim2.new(1, 0, 0, 35)
-    TimerLabel.Position = UDim2.new(0, 0, 0, -38)
-    TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
-    TimerLabel.TextColor3 = Color3.new(1,1,1)
-    TimerLabel.TextScaled = true
-    TimerLabel.Font = Enum.Font.GothamBold
-    TimerLabel.Text = "Temporizador: 45s"
-    TimerLabel.Visible = false
-    TimerLabel.Parent = MainFrame
+    -- Bolita Roja Movible
+    local TimerBall = Instance.new("Frame")
+    TimerBall.Size = UDim2.new(0, 70, 0, 70)
+    TimerBall.Position = UDim2.new(0.8, 0, 0.1, 0)
+    TimerBall.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    TimerBall.Active = true
+    TimerBall.Draggable = true
+    TimerBall.Visible = false
+    TimerBall.Parent = ScreenGui
+
+    local BallCorner = Instance.new("UICorner")
+    BallCorner.CornerRadius = UDim.new(1, 0)
+    BallCorner.Parent = TimerBall
+
+    local TimerText = Instance.new("TextLabel")
+    TimerText.Size = UDim2.new(1,0,1,0)
+    TimerText.BackgroundTransparency = 1
+    TimerText.Text = "45s"
+    TimerText.TextColor3 = Color3.new(1,1,1)
+    TimerText.TextScaled = true
+    TimerText.Font = Enum.Font.GothamBold
+    TimerText.Parent = TimerBall
 
     local function startTimer()
-        TimerLabel.Visible = true
+        TimerBall.Visible = true
         local t = TIMER_DURATION
         spawn(function()
             while t > 0 do
-                TimerLabel.Text = "Temporizador: " .. t .. "s"
+                TimerText.Text = t .. "s"
                 wait(1)
                 t -= 1
             end
-            TimerLabel.Text = "Temporizador: 0s"
+            TimerText.Text = "0s"
         end)
     end
 
@@ -138,10 +149,10 @@ function createMainGUI()
 
         btn.MouseButton1Click:Connect(function()
             TeleportTo(unpack(stage.pos))
-            startTimer()
+            startTimer()   -- Reinicia y muestra la bolita
         end)
         y = y + 55
     end
 end
 
-print("🔒 Script cargado - Usa la clave XKR")
+print("🔒 Script cargado - Usa XKR")
