@@ -65,76 +65,88 @@ ConfirmBtn.Parent = KeyFrame
 ConfirmBtn.MouseButton1Click:Connect(function()
     if KeyBox.Text == CORRECT_KEY then
         KeyFrame:Destroy()
-        loadstring([[ 
-            -- MAIN GUI
-            local MainFrame = Instance.new("Frame")
-            MainFrame.Size = UDim2.new(0, 300, 0, 380)
-            MainFrame.Position = UDim2.new(0.5, -150, 0.2, 0)
-            MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-            MainFrame.Active = true
-            MainFrame.Draggable = true
-            MainFrame.Parent = ScreenGui
+        -- Main GUI
+        local MainFrame = Instance.new("Frame")
+        MainFrame.Size = UDim2.new(0, 300, 0, 380)
+        MainFrame.Position = UDim2.new(0.5, -150, 0.2, 0)
+        MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+        MainFrame.Active = true
+        MainFrame.Draggable = true
+        MainFrame.Parent = ScreenGui
 
-            local Title2 = Instance.new("TextLabel")
-            Title2.Size = UDim2.new(1,0,0,45)
-            Title2.BackgroundColor3 = Color3.fromRGB(0,120,255)
-            Title2.Text = "Teleports"
-            Title2.TextColor3 = Color3.new(1,1,1)
-            Title2.TextScaled = true
-            Title2.Parent = MainFrame
+        local Title2 = Instance.new("TextLabel")
+        Title2.Size = UDim2.new(1,0,0,45)
+        Title2.BackgroundColor3 = Color3.fromRGB(0,120,255)
+        Title2.Text = "Teleports"
+        Title2.TextColor3 = Color3.new(1,1,1)
+        Title2.TextScaled = true
+        Title2.Parent = MainFrame
 
-            -- Bolita Roja
-            local TimerBall = Instance.new("Frame")
-            TimerBall.Size = UDim2.new(0,70,0,70)
-            TimerBall.Position = UDim2.new(0.8,0,0.1,0)
-            TimerBall.BackgroundColor3 = Color3.fromRGB(255,0,0)
-            TimerBall.Active = true
-            TimerBall.Draggable = true
-            TimerBall.Parent = ScreenGui
+        -- Bolita Roja Movible
+        local TimerBall = Instance.new("Frame")
+        TimerBall.Size = UDim2.new(0,70,0,70)
+        TimerBall.Position = UDim2.new(0.8,0,0.1,0)
+        TimerBall.BackgroundColor3 = Color3.fromRGB(255,0,0)
+        TimerBall.Active = true
+        TimerBall.Draggable = true
+        TimerBall.Parent = ScreenGui
 
-            local BallCorner = Instance.new("UICorner")
-            BallCorner.CornerRadius = UDim.new(1,0)
-            BallCorner.Parent = TimerBall
+        local BallCorner = Instance.new("UICorner")
+        BallCorner.CornerRadius = UDim.new(1,0)
+        BallCorner.Parent = TimerBall
 
-            local TimerText = Instance.new("TextLabel")
-            TimerText.Size = UDim2.new(1,0,1,0)
-            TimerText.BackgroundTransparency = 1
-            TimerText.Text = "45s"
-            TimerText.TextColor3 = Color3.new(1,1,1)
-            TimerText.TextScaled = true
-            TimerText.Parent = TimerBall
+        local TimerText = Instance.new("TextLabel")
+        TimerText.Size = UDim2.new(1,0,1,0)
+        TimerText.BackgroundTransparency = 1
+        TimerText.Text = "45s"
+        TimerText.TextColor3 = Color3.new(1,1,1)
+        TimerText.TextScaled = true
+        TimerText.Font = Enum.Font.GothamBold
+        TimerText.Parent = TimerBall
 
-            local function startTimer()
-                local t = 45
-                spawn(function()
-                    while t > 0 do
-                        TimerText.Text = t .. "s"
-                        wait(1)
-                        t = t - 1
-                    end
-                    TimerText.Text = "0s"
-                end)
-            end
+        local function startTimer()
+            local t = TIMER_DURATION
+            spawn(function()
+                while t > 0 do
+                    TimerText.Text = t .. "s"
+                    wait(1)
+                    t -= 1
+                end
+                TimerText.Text = "0s"
+            end)
+        end
 
-            -- Botones
-            local positions = {{7961,715,5144}}
-            local names = {"Etapa 15 TP", "Etapa 16 TP", "Etapa 17 TP", "Etapa 18 TP"}
+        -- Botones
+        local stages = {
+            {name = "Etapa 15 TP", pos = {7961, 715, 5144}},
+            {name = "Etapa 16 TP", pos = {7961, 715, 5144}},
+            {name = "Etapa 17 TP", pos = {7961, 715, 5144}},
+            {name = "Etapa 18 TP", pos = {7961, 715, 5144}},
+        }
 
-            for i, name in ipairs(names) do
-                local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1,-20,0,45)
-                btn.Position = UDim2.new(0,10,0,50 + (i*55))
-                btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-                btn.Text = name
-                btn.TextColor3 = Color3.new(1,1,1)
-                btn.TextScaled = true
-                btn.Parent = MainFrame
+        local y = 55
+        for _, stage in ipairs(stages) do
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1,-20,0,45)
+            btn.Position = UDim2.new(0,10,0,y)
+            btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+            btn.Text = stage.name
+            btn.TextColor3 = Color3.new(1,1,1)
+            btn.TextScaled = true
+            btn.Parent = MainFrame
 
-                btn.MouseButton1Click:Connect(function()
-                    TeleportTo(unpack(positions[1]))
-                    startTimer()
-                end)
-            end
-        ]])()
+            btn.MouseButton1Click:Connect(function()
+                TeleportTo(unpack(stage.pos))
+                startTimer()
+            end)
+            y = y + 55
+        end
     else
-        KeyBox.Text
+        KeyBox.Text = ""
+        KeyBox.PlaceholderText = "Key Invalid"
+        wait(1.5)
+        KeyBox.PlaceholderText = "Ingresa la clave..."
+    end
+end)
+
+print("🔒 Key System cargado - Usa XKR")
