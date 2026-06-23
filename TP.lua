@@ -74,18 +74,18 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MAIN GUI ====================
+-- ==================== MAIN GUI (Más pequeño) ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 290, 0, 340)  -- Un poco más pequeño
-    MainFrame.Position = UDim2.new(0.5, -145, 0.2, 0)
+    MainFrame.Size = UDim2.new(0, 260, 0, 160)   -- Muy pequeño
+    MainFrame.Position = UDim2.new(0.5, -130, 0.25, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
     MainFrame.Active = true
     MainFrame.Draggable = true
     MainFrame.Parent = ScreenGui
 
     local Title2 = Instance.new("TextLabel")
-    Title2.Size = UDim2.new(1,0,0,45)
+    Title2.Size = UDim2.new(1,0,0,40)
     Title2.BackgroundColor3 = Color3.fromRGB(0,120,255)
     Title2.Text = "Teleports"
     Title2.TextColor3 = Color3.new(1,1,1)
@@ -94,8 +94,8 @@ function createMainGUI()
 
     -- Temporizador arriba
     local TimerLabel = Instance.new("TextLabel")
-    TimerLabel.Size = UDim2.new(0, 180, 0, 40)
-    TimerLabel.Position = UDim2.new(0.5, -90, 0, 10)
+    TimerLabel.Size = UDim2.new(0, 180, 0, 35)
+    TimerLabel.Position = UDim2.new(0.5, -90, 0, 8)
     TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
     TimerLabel.TextColor3 = Color3.new(1,1,1)
     TimerLabel.TextScaled = true
@@ -117,31 +117,20 @@ function createMainGUI()
         end)
     end
 
-    -- Botones más pequeños
-    local stages = {
-        {name = "Etapa 15 TP", pos = {7961, 715, 5144}},
-        {name = "Etapa 16 TP", pos = {7961, 715, 5144}},
-        {name = "Etapa 17 TP", pos = {7961, 715, 5144}},
-        {name = "Etapa 18 TP", pos = {7961, 715, 5144}},
-    }
+    -- Botón único Etapa 16
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1,-20,0,45)
+    btn.Position = UDim2.new(0,10,0,55)
+    btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    btn.Text = "Etapa 16 TP"
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextScaled = true
+    btn.Parent = MainFrame
 
-    local y = 55
-    for _, stage in ipairs(stages) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1,-20,0,35)  -- Más pequeño
-        btn.Position = UDim2.new(0,10,0,y)
-        btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-        btn.Text = stage.name
-        btn.TextColor3 = Color3.new(1,1,1)
-        btn.TextScaled = true
-        btn.Parent = MainFrame
-
-        btn.MouseButton1Click:Connect(function()
-            TeleportTo(unpack(stage.pos))
-            startTimer()
-        end)
-        y = y + 45
-    end
+    btn.MouseButton1Click:Connect(function()
+        TeleportTo(7961, 715, 5144)
+        startTimer()
+    end)
 end
 
 print("🔒 Script cargado - Usa la clave XKR")
