@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
 
 local HEIGHT_OFFSET = 5
 local TIMER_DURATION = 45
@@ -75,8 +74,34 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ PEQUEÑO Y MOVIBLE MEJORADO ====================
+-- ==================== MENÚ PEQUEÑO + TEMPORIZADOR ARRIBA ====================
 function createMainGUI()
+    -- Temporizador arriba
+    local TimerLabel = Instance.new("TextLabel")
+    TimerLabel.Size = UDim2.new(0, 160, 0, 30)
+    TimerLabel.Position = UDim2.new(0.5, -80, 0, 8)
+    TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
+    TimerLabel.TextColor3 = Color3.new(1,1,1)
+    TimerLabel.TextScaled = true
+    TimerLabel.Font = Enum.Font.GothamBold
+    TimerLabel.Text = "Temporizador: 45s"
+    TimerLabel.Visible = false
+    TimerLabel.Parent = ScreenGui
+
+    local function startTimer()
+        TimerLabel.Visible = true
+        local t = TIMER_DURATION
+        spawn(function()
+            while t > 0 do
+                TimerLabel.Text = "Temporizador: " .. t .. "s"
+                wait(1)
+                t -= 1
+            end
+            TimerLabel.Text = "Temporizador: 0s"
+        end)
+    end
+
+    -- Menú desplegable pequeño
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0, 190, 0, 38)
     MainFrame.Position = UDim2.new(0.5, -95, 0.2, 0)
@@ -121,43 +146,7 @@ function createMainGUI()
 
     TPBtn.MouseButton1Click:Connect(function()
         TeleportTo(7961, 715, 5144)
-    end)
-
-    -- Arrastrar mejorado
-    local dragging
-    local dragInput
-    local dragStart
-    local startPos
-
-    local function update(input)
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-
-    TitleBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = MainFrame.Position
-        end
-    end)
-
-    TitleBtn.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input == dragInput then
-            update(input)
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
+        startTimer()
     end)
 end
 
