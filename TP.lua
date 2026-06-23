@@ -74,54 +74,54 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ DESPLEGABLE COMPACTO ====================
+-- ==================== MENÚ COMPACTO (Estilo Orva) ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 280, 0, 50)   -- Cerrado
-    MainFrame.Position = UDim2.new(0.5, -140, 0.15, 0)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    MainFrame.Size = UDim2.new(0, 260, 0, 50)   -- Muy compacto
+    MainFrame.Position = UDim2.new(0.5, -130, 0.2, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
     MainFrame.Draggable = true
     MainFrame.Parent = ScreenGui
 
     local TitleBtn = Instance.new("TextButton")
-    TitleBtn.Size = UDim2.new(1,0,0,50)
-    TitleBtn.BackgroundColor3 = Color3.fromRGB(0,120,255)
+    TitleBtn.Size = UDim2.new(1,0,1,0)
+    TitleBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
     TitleBtn.Text = "Teleports ▼"
     TitleBtn.TextColor3 = Color3.new(1,1,1)
     TitleBtn.TextScaled = true
     TitleBtn.Font = Enum.Font.GothamBold
     TitleBtn.Parent = MainFrame
 
+    local isOpen = false
     local Content = Instance.new("Frame")
     Content.Size = UDim2.new(1,0,0,50)
-    Content.Position = UDim2.new(0,0,0,50)
+    Content.Position = UDim2.new(0,0,1,0)
     Content.BackgroundColor3 = Color3.fromRGB(25,25,25)
     Content.Visible = false
     Content.Parent = MainFrame
 
-    local TPButton = Instance.new("TextButton")
-    TPButton.Size = UDim2.new(1,-20,0,40)
-    TPButton.Position = UDim2.new(0,10,0,5)
-    TPButton.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    TPButton.Text = "Etapa 16 TP"
-    TPButton.TextColor3 = Color3.new(1,1,1)
-    TPButton.TextScaled = true
-    TPButton.Parent = Content
-
-    local isOpen = false
+    local TPBtn = Instance.new("TextButton")
+    TPBtn.Size = UDim2.new(1,-20,0,40)
+    TPBtn.Position = UDim2.new(0,10,0,5)
+    TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    TPBtn.Text = "Etapa 16 TP"
+    TPBtn.TextColor3 = Color3.new(1,1,1)
+    TPBtn.TextScaled = true
+    TPBtn.Font = Enum.Font.GothamSemibold
+    TPBtn.Parent = Content
 
     TitleBtn.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         Content.Visible = isOpen
-        MainFrame.Size = isOpen and UDim2.new(0, 280, 0, 110) or UDim2.new(0, 280, 0, 50)
+        MainFrame.Size = isOpen and UDim2.new(0, 260, 0, 105) or UDim2.new(0, 260, 0, 50)
         TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
     end)
 
-    -- Temporizador arriba
+    -- Temporizador
     local TimerLabel = Instance.new("TextLabel")
-    TimerLabel.Size = UDim2.new(0, 180, 0, 35)
-    TimerLabel.Position = UDim2.new(0.5, -90, 0, 8)
+    TimerLabel.Size = UDim2.new(0, 160, 0, 30)
+    TimerLabel.Position = UDim2.new(0.5, -80, 0, 8)
     TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
     TimerLabel.TextColor3 = Color3.new(1,1,1)
     TimerLabel.TextScaled = true
@@ -143,10 +143,10 @@ function createMainGUI()
         end)
     end
 
-    TPButton.MouseButton1Click:Connect(function()
+    TPBtn.MouseButton1Click:Connect(function()
         TeleportTo(7961, 715, 5144)
         startTimer()
     end)
 end
 
-print("🔒 Script cargado - Usa la clave XKR")
+print("🔒 Script cargado - Usa XKR")
