@@ -48,4 +48,11 @@ local KeyBox = Instance.new("TextBox")
 KeyBox.Size = UDim2.new(0.8,0,0,40)
 KeyBox.Position = UDim2.new(0.1,0,0.45,0)
 KeyBox.PlaceholderText = "Ingresa la clave..."
-KeyBox
+KeyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+KeyBox.TextColor3 = Color3.new(1,1,1)
+KeyBox.TextScaled = true
+KeyBox.Parent = KeyFrame
+
+local ConfirmBtn = Instance.new("TextButton")
+ConfirmBtn.Size = UDim2.new(0.6,0,0,40)
+ConfirmBtn.Position = UDim2.new(0.2,0,0
