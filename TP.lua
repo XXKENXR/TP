@@ -47,7 +47,7 @@ Subtitle.Parent = KeyFrame
 local KeyBox = Instance.new("TextBox")
 KeyBox.Size = UDim2.new(0.8,0,0,40)
 KeyBox.Position = UDim2.new(0.1,0,0.45,0)
-KeyBox.PlaceholderText = "Ingresa la clave..."
+KeyBox.PlaceholderText = "Insert key"
 KeyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
 KeyBox.TextColor3 = Color3.new(1,1,1)
 KeyBox.TextScaled = true
@@ -70,18 +70,18 @@ ConfirmBtn.MouseButton1Click:Connect(function()
         KeyBox.Text = ""
         KeyBox.PlaceholderText = "Key Invalid"
         wait(1.5)
-        KeyBox.PlaceholderText = "Ingresa la clave..."
+        KeyBox.PlaceholderText = "Insert key"
     end
 end)
 
--- ==================== MENÚ DESPLEGABLE PEQUEÑO Y MOVIBLE ====================
+-- ==================== MENÚ DESPLEGABLE PEQUEÑO ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 220, 0, 45)   -- Muy pequeño
+    MainFrame.Size = UDim2.new(0, 220, 0, 45)
     MainFrame.Position = UDim2.new(0.5, -110, 0.2, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
-    MainFrame.Draggable = true   -- Movible
+    MainFrame.Draggable = true
     MainFrame.Parent = ScreenGui
 
     local TitleBtn = Instance.new("TextButton")
@@ -101,8 +101,8 @@ function createMainGUI()
     Content.Parent = MainFrame
 
     local TPBtn = Instance.new("TextButton")
-    TPBtn.Size = UDim2.new(1,-20,0,35)
-    TPBtn.Position = UDim2.new(0,10,0,5)
+    TPBtn.Size = UDim2.new(1,-16,0,35)
+    TPBtn.Position = UDim2.new(0,8,0,5)
     TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     TPBtn.Text = "Etapa 16 TP"
     TPBtn.TextColor3 = Color3.new(1,1,1)
