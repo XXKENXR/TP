@@ -76,3 +76,49 @@ KeyButton.Font = Enum.Font.GothamBold
 KeyButton.Parent = KeyFrame
 
 local KeyButtonCorner = Instance.new("UICorner")
+KeyButtonCorner.CornerRadius = UDim.new(0, 8)
+KeyButtonCorner.Parent = KeyButton
+
+KeyButton.MouseButton1Click:Connect(function()
+    if KeyBox.Text == CORRECT_KEY then
+        KeyFrame:Destroy()
+        createMainGUI()
+    else
+        KeyBox.Text = ""
+        KeyBox.PlaceholderText = "Key Invalid"
+        wait(1.5)
+        KeyBox.PlaceholderText = "Ingresa la clave..."
+    end
+end)
+
+-- ==================== MAIN GUI + BOLITA ROJA ====================
+function createMainGUI()
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 300, 0, 380)
+    MainFrame.Position = UDim2.new(0.5, -150, 0.2, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    MainFrame.Parent = ScreenGui
+
+    local MainCorner = Instance.new("UICorner")
+    MainCorner.CornerRadius = UDim.new(0, 10)
+    MainCorner.Parent = MainFrame
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 45)
+    Title.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    Title.Text = "Teleports"
+    Title.TextColor3 = Color3.new(1,1,1)
+    Title.TextScaled = true
+    Title.Font = Enum.Font.GothamBold
+    Title.Parent = MainFrame
+
+    local TitleCorner = Instance.new("UICorner")
+    TitleCorner.CornerRadius = UDim.new(0, 10)
+    TitleCorner.Parent = Title
+
+    -- Bolita Roja Movible
+    local TimerBall = Instance.new("Frame")
+    TimerBall.Size = UDim2.new(0, 70, 0, 70)
+    TimerBall
