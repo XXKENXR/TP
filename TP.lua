@@ -74,7 +74,7 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MAIN GUI ====================
+-- ==================== MAIN GUI + TEMPORIZADOR EN LA PARTE SUPERIOR ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0, 300, 0, 380)
@@ -92,39 +92,28 @@ function createMainGUI()
     Title2.TextScaled = true
     Title2.Parent = MainFrame
 
-    -- Bolita Roja Movible
-    local TimerBall = Instance.new("Frame")
-    TimerBall.Size = UDim2.new(0, 70, 0, 70)
-    TimerBall.Position = UDim2.new(0.8, 0, 0.1, 0)
-    TimerBall.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    TimerBall.Active = true
-    TimerBall.Draggable = true
-    TimerBall.Visible = false
-    TimerBall.Parent = ScreenGui
-
-    local BallCorner = Instance.new("UICorner")
-    BallCorner.CornerRadius = UDim.new(1, 0)
-    BallCorner.Parent = TimerBall
-
-    local TimerText = Instance.new("TextLabel")
-    TimerText.Size = UDim2.new(1,0,1,0)
-    TimerText.BackgroundTransparency = 1
-    TimerText.Text = "45s"
-    TimerText.TextColor3 = Color3.new(1,1,1)
-    TimerText.TextScaled = true
-    TimerText.Font = Enum.Font.GothamBold
-    TimerText.Parent = TimerBall
+    -- Temporizador en la parte superior (HUD)
+    local TimerLabel = Instance.new("TextLabel")
+    TimerLabel.Size = UDim2.new(0, 180, 0, 40)
+    TimerLabel.Position = UDim2.new(0.5, -90, 0, 10)  -- Arriba en el centro
+    TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
+    TimerLabel.TextColor3 = Color3.new(1,1,1)
+    TimerLabel.TextScaled = true
+    TimerLabel.Font = Enum.Font.GothamBold
+    TimerLabel.Text = "Temporizador: 45s"
+    TimerLabel.Visible = false
+    TimerLabel.Parent = ScreenGui
 
     local function startTimer()
-        TimerBall.Visible = true
+        TimerLabel.Visible = true
         local t = TIMER_DURATION
         spawn(function()
             while t > 0 do
-                TimerText.Text = t .. "s"
+                TimerLabel.Text = "Temporizador: " .. t .. "s"
                 wait(1)
                 t -= 1
             end
-            TimerText.Text = "0s"
+            TimerLabel.Text = "Temporizador: 0s"
         end)
     end
 
@@ -149,10 +138,10 @@ function createMainGUI()
 
         btn.MouseButton1Click:Connect(function()
             TeleportTo(unpack(stage.pos))
-            startTimer()   -- Reinicia y muestra la bolita
+            startTimer()
         end)
         y = y + 55
     end
 end
 
-print("🔒 Script cargado - Usa XKR")
+print("🔒 Script cargado - Usa la clave XKR")
