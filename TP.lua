@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 local HEIGHT_OFFSET = 5
+local TIMER_DURATION = 45
 local CORRECT_KEY = "XKR"
 
 local function TeleportTo(x, y, z)
@@ -16,7 +17,7 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- KEY SYSTEM
+-- ==================== KEY SYSTEM ====================
 local KeyFrame = Instance.new("Frame")
 KeyFrame.Size = UDim2.new(0, 320, 0, 200)
 KeyFrame.Position = UDim2.new(0.5, -160, 0.35, 0)
@@ -73,11 +74,11 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ ULTRA PEQUEÑO ====================
+-- ==================== MENÚ ULTRA PEQUEÑO Y MOVIBLE ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 180, 0, 35)   -- Muy pequeño
-    MainFrame.Position = UDim2.new(0.5, -90, 0.2, 0)
+    MainFrame.Size = UDim2.new(0, 190, 0, 38)
+    MainFrame.Position = UDim2.new(0.5, -95, 0.2, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
     MainFrame.Draggable = true
@@ -100,8 +101,8 @@ function createMainGUI()
     Content.Parent = MainFrame
 
     local TPBtn = Instance.new("TextButton")
-    TPBtn.Size = UDim2.new(1,-20,0,30)
-    TPBtn.Position = UDim2.new(0,10,0,5)
+    TPBtn.Size = UDim2.new(1,-20,0,32)
+    TPBtn.Position = UDim2.new(0,10,0,4)
     TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     TPBtn.Text = "Etapa 16 TP"
     TPBtn.TextColor3 = Color3.new(1,1,1)
@@ -113,7 +114,7 @@ function createMainGUI()
     TitleBtn.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         Content.Visible = isOpen
-        MainFrame.Size = isOpen and UDim2.new(0, 180, 0, 80) or UDim2.new(0, 180, 0, 35)
+        MainFrame.Size = isOpen and UDim2.new(0, 190, 0, 83) or UDim2.new(0, 190, 0, 38)
         TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
     end)
 
