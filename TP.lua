@@ -74,7 +74,7 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ ULTRA PEQUEÑO Y MOVIBLE ====================
+-- ==================== MENÚ PEQUEÑO Y MOVIBLE ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0, 190, 0, 38)
