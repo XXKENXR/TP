@@ -74,11 +74,11 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ COMPACTO (Estilo Orva) ====================
+-- ==================== MENÚ DESPLEGABLE MÁS PEQUEÑO ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 260, 0, 50)   -- Muy compacto
-    MainFrame.Position = UDim2.new(0.5, -130, 0.2, 0)
+    MainFrame.Size = UDim2.new(0, 240, 0, 45)   -- Muy compacto
+    MainFrame.Position = UDim2.new(0.5, -120, 0.18, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
     MainFrame.Draggable = true
@@ -93,17 +93,16 @@ function createMainGUI()
     TitleBtn.Font = Enum.Font.GothamBold
     TitleBtn.Parent = MainFrame
 
-    local isOpen = false
     local Content = Instance.new("Frame")
-    Content.Size = UDim2.new(1,0,0,50)
+    Content.Size = UDim2.new(1,0,0,45)
     Content.Position = UDim2.new(0,0,1,0)
     Content.BackgroundColor3 = Color3.fromRGB(25,25,25)
     Content.Visible = false
     Content.Parent = MainFrame
 
     local TPBtn = Instance.new("TextButton")
-    TPBtn.Size = UDim2.new(1,-20,0,40)
-    TPBtn.Position = UDim2.new(0,10,0,5)
+    TPBtn.Size = UDim2.new(1,-16,0,35)
+    TPBtn.Position = UDim2.new(0,8,0,5)
     TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     TPBtn.Text = "Etapa 16 TP"
     TPBtn.TextColor3 = Color3.new(1,1,1)
@@ -111,10 +110,12 @@ function createMainGUI()
     TPBtn.Font = Enum.Font.GothamSemibold
     TPBtn.Parent = Content
 
+    local isOpen = false
+
     TitleBtn.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         Content.Visible = isOpen
-        MainFrame.Size = isOpen and UDim2.new(0, 260, 0, 105) or UDim2.new(0, 260, 0, 50)
+        MainFrame.Size = isOpen and UDim2.new(0, 240, 0, 95) or UDim2.new(0, 240, 0, 45)
         TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
     end)
 
@@ -149,4 +150,4 @@ function createMainGUI()
     end)
 end
 
-print("🔒 Script cargado - Usa XKR")
+print("🔒 Script cargado - Usa la clave XKR")
