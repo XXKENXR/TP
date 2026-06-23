@@ -74,12 +74,12 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ PEQUEÑO + TEMPORIZADOR ARRIBA ====================
+-- ==================== MENÚ + TEMPORIZADOR ====================
 function createMainGUI()
-    -- Temporizador arriba
+    -- Temporizador arriba (empieza oculto)
     local TimerLabel = Instance.new("TextLabel")
-    TimerLabel.Size = UDim2.new(0, 160, 0, 30)
-    TimerLabel.Position = UDim2.new(0.5, -80, 0, 8)
+    TimerLabel.Size = UDim2.new(0, 180, 0, 35)
+    TimerLabel.Position = UDim2.new(0.5, -90, 0, 8)
     TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
     TimerLabel.TextColor3 = Color3.new(1,1,1)
     TimerLabel.TextScaled = true
@@ -101,7 +101,7 @@ function createMainGUI()
         end)
     end
 
-    -- Menú desplegable pequeño
+    -- Menú pequeño
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0, 190, 0, 38)
     MainFrame.Position = UDim2.new(0.5, -95, 0.2, 0)
@@ -146,7 +146,7 @@ function createMainGUI()
 
     TPBtn.MouseButton1Click:Connect(function()
         TeleportTo(7961, 715, 5144)
-        startTimer()
+        startTimer()   -- Solo aparece cuando haces TP
     end)
 end
 
