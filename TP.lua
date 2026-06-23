@@ -74,33 +74,8 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ + TEMPORIZADOR ====================
+-- ==================== MAIN GUI ====================
 function createMainGUI()
-    -- Temporizador (empieza oculto)
-    local TimerLabel = Instance.new("TextLabel")
-    TimerLabel.Size = UDim2.new(0, 180, 0, 35)
-    TimerLabel.Position = UDim2.new(0.5, -90, 0, 8)
-    TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
-    TimerLabel.TextColor3 = Color3.new(1,1,1)
-    TimerLabel.TextScaled = true
-    TimerLabel.Font = Enum.Font.GothamBold
-    TimerLabel.Text = "Temporizador: 45s"
-    TimerLabel.Visible = false
-    TimerLabel.Parent = ScreenGui
-
-    local function startTimer()
-        TimerLabel.Visible = true
-        local t = TIMER_DURATION
-        spawn(function()
-            while t > 0 do
-                TimerLabel.Text = "Temporizador: " .. t .. "s"
-                wait(1)
-                t -= 1
-            end
-            TimerLabel.Text = "Temporizador: 0s"
-        end)
-    end
-
     -- Menú pequeño
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0, 190, 0, 38)
@@ -144,9 +119,34 @@ function createMainGUI()
         TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
     end)
 
+    -- TEMPORIZADOR (solo aparece al hacer TP)
+    local TimerLabel = Instance.new("TextLabel")
+    TimerLabel.Size = UDim2.new(0, 180, 0, 35)
+    TimerLabel.Position = UDim2.new(0.5, -90, 0, 8)
+    TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
+    TimerLabel.TextColor3 = Color3.new(1,1,1)
+    TimerLabel.TextScaled = true
+    TimerLabel.Font = Enum.Font.GothamBold
+    TimerLabel.Text = "Temporizador: 45s"
+    TimerLabel.Visible = false
+    TimerLabel.Parent = ScreenGui
+
+    local function startTimer()
+        TimerLabel.Visible = true
+        local t = TIMER_DURATION
+        spawn(function()
+            while t > 0 do
+                TimerLabel.Text = "Temporizador: " .. t .. "s"
+                wait(1)
+                t -= 1
+            end
+            TimerLabel.Text = "Temporizador: 0s"
+        end)
+    end
+
     TPBtn.MouseButton1Click:Connect(function()
         TeleportTo(7961, 715, 5144)
-        startTimer()   -- Solo aparece al hacer TP
+        startTimer()
     end)
 end
 
