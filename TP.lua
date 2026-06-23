@@ -74,11 +74,11 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MAIN GUI + TEMPORIZADOR EN LA PARTE SUPERIOR ====================
+-- ==================== MAIN GUI ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 300, 0, 380)
-    MainFrame.Position = UDim2.new(0.5, -150, 0.2, 0)
+    MainFrame.Size = UDim2.new(0, 290, 0, 340)  -- Un poco más pequeño
+    MainFrame.Position = UDim2.new(0.5, -145, 0.2, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
     MainFrame.Active = true
     MainFrame.Draggable = true
@@ -92,10 +92,10 @@ function createMainGUI()
     Title2.TextScaled = true
     Title2.Parent = MainFrame
 
-    -- Temporizador en la parte superior (HUD)
+    -- Temporizador arriba
     local TimerLabel = Instance.new("TextLabel")
     TimerLabel.Size = UDim2.new(0, 180, 0, 40)
-    TimerLabel.Position = UDim2.new(0.5, -90, 0, 10)  -- Arriba en el centro
+    TimerLabel.Position = UDim2.new(0.5, -90, 0, 10)
     TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
     TimerLabel.TextColor3 = Color3.new(1,1,1)
     TimerLabel.TextScaled = true
@@ -117,7 +117,7 @@ function createMainGUI()
         end)
     end
 
-    -- Botones
+    -- Botones más pequeños
     local stages = {
         {name = "Etapa 15 TP", pos = {7961, 715, 5144}},
         {name = "Etapa 16 TP", pos = {7961, 715, 5144}},
@@ -128,7 +128,7 @@ function createMainGUI()
     local y = 55
     for _, stage in ipairs(stages) do
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1,-20,0,45)
+        btn.Size = UDim2.new(1,-20,0,35)  -- Más pequeño
         btn.Position = UDim2.new(0,10,0,y)
         btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
         btn.Text = stage.name
@@ -140,7 +140,7 @@ function createMainGUI()
             TeleportTo(unpack(stage.pos))
             startTimer()
         end)
-        y = y + 55
+        y = y + 45
     end
 end
 
