@@ -17,7 +17,7 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- ==================== KEY SYSTEM ====================
+-- KEY SYSTEM
 local KeyFrame = Instance.new("Frame")
 KeyFrame.Size = UDim2.new(0, 320, 0, 200)
 KeyFrame.Position = UDim2.new(0.5, -160, 0.35, 0)
@@ -74,14 +74,14 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ DESPLEGABLE PEQUEÑO ====================
+-- ==================== MENÚ ULTRA PEQUEÑO Y MOVIBLE ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 220, 0, 45)
-    MainFrame.Position = UDim2.new(0.5, -110, 0.2, 0)
+    MainFrame.Size = UDim2.new(0, 200, 0, 40)   -- Muy pequeño
+    MainFrame.Position = UDim2.new(0.5, -100, 0.2, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
-    MainFrame.Draggable = true
+    MainFrame.Draggable = true   -- Totalmente movible
     MainFrame.Parent = ScreenGui
 
     local TitleBtn = Instance.new("TextButton")
@@ -101,8 +101,8 @@ function createMainGUI()
     Content.Parent = MainFrame
 
     local TPBtn = Instance.new("TextButton")
-    TPBtn.Size = UDim2.new(1,-16,0,35)
-    TPBtn.Position = UDim2.new(0,8,0,5)
+    TPBtn.Size = UDim2.new(1,-20,0,35)
+    TPBtn.Position = UDim2.new(0,10,0,5)
     TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     TPBtn.Text = "Etapa 16 TP"
     TPBtn.TextColor3 = Color3.new(1,1,1)
@@ -114,38 +114,12 @@ function createMainGUI()
     TitleBtn.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         Content.Visible = isOpen
-        MainFrame.Size = isOpen and UDim2.new(0, 220, 0, 95) or UDim2.new(0, 220, 0, 45)
+        MainFrame.Size = isOpen and UDim2.new(0, 200, 0, 90) or UDim2.new(0, 200, 0, 40)
         TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
     end)
 
-    -- Temporizador
-    local TimerLabel = Instance.new("TextLabel")
-    TimerLabel.Size = UDim2.new(0, 160, 0, 30)
-    TimerLabel.Position = UDim2.new(0.5, -80, 0, 8)
-    TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
-    TimerLabel.TextColor3 = Color3.new(1,1,1)
-    TimerLabel.TextScaled = true
-    TimerLabel.Font = Enum.Font.GothamBold
-    TimerLabel.Text = "Temporizador: 45s"
-    TimerLabel.Visible = false
-    TimerLabel.Parent = ScreenGui
-
-    local function startTimer()
-        TimerLabel.Visible = true
-        local t = TIMER_DURATION
-        spawn(function()
-            while t > 0 do
-                TimerLabel.Text = "Temporizador: " .. t .. "s"
-                wait(1)
-                t -= 1
-            end
-            TimerLabel.Text = "Temporizador: 0s"
-        end)
-    end
-
     TPBtn.MouseButton1Click:Connect(function()
         TeleportTo(7961, 715, 5144)
-        startTimer()
     end)
 end
 
