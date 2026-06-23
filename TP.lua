@@ -77,11 +77,11 @@ end)
 -- ==================== MENÚ ULTRA PEQUEÑO Y MOVIBLE ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 200, 0, 40)   -- Muy pequeño
-    MainFrame.Position = UDim2.new(0.5, -100, 0.2, 0)
+    MainFrame.Size = UDim2.new(0, 190, 0, 38)   -- Muy pequeño
+    MainFrame.Position = UDim2.new(0.5, -95, 0.2, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
-    MainFrame.Draggable = true   -- Totalmente movible
+    MainFrame.Draggable = true
     MainFrame.Parent = ScreenGui
 
     local TitleBtn = Instance.new("TextButton")
@@ -94,15 +94,15 @@ function createMainGUI()
     TitleBtn.Parent = MainFrame
 
     local Content = Instance.new("Frame")
-    Content.Size = UDim2.new(1,0,0,45)
+    Content.Size = UDim2.new(1,0,0,40)
     Content.Position = UDim2.new(0,0,1,0)
     Content.BackgroundColor3 = Color3.fromRGB(25,25,25)
     Content.Visible = false
     Content.Parent = MainFrame
 
     local TPBtn = Instance.new("TextButton")
-    TPBtn.Size = UDim2.new(1,-20,0,35)
-    TPBtn.Position = UDim2.new(0,10,0,5)
+    TPBtn.Size = UDim2.new(1,-20,0,32)
+    TPBtn.Position = UDim2.new(0,10,0,4)
     TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     TPBtn.Text = "Etapa 16 TP"
     TPBtn.TextColor3 = Color3.new(1,1,1)
@@ -114,7 +114,7 @@ function createMainGUI()
     TitleBtn.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         Content.Visible = isOpen
-        MainFrame.Size = isOpen and UDim2.new(0, 200, 0, 90) or UDim2.new(0, 200, 0, 40)
+        MainFrame.Size = isOpen and UDim2.new(0, 190, 0, 83) or UDim2.new(0, 190, 0, 38)
         TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
     end)
 
