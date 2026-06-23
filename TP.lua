@@ -17,7 +17,7 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- ==================== KEY SYSTEM ====================
+-- KEY SYSTEM
 local KeyFrame = Instance.new("Frame")
 KeyFrame.Size = UDim2.new(0, 320, 0, 200)
 KeyFrame.Position = UDim2.new(0.5, -160, 0.35, 0)
@@ -74,10 +74,10 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ DESPLEGABLE MÁS PEQUEÑO ====================
+-- MENÚ DESPLEGABLE COMPACTO
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 240, 0, 45)   -- Muy compacto
+    MainFrame.Size = UDim2.new(0, 240, 0, 45)
     MainFrame.Position = UDim2.new(0.5, -120, 0.18, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
@@ -107,7 +107,6 @@ function createMainGUI()
     TPBtn.Text = "Etapa 16 TP"
     TPBtn.TextColor3 = Color3.new(1,1,1)
     TPBtn.TextScaled = true
-    TPBtn.Font = Enum.Font.GothamSemibold
     TPBtn.Parent = Content
 
     local isOpen = false
