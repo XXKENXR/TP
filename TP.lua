@@ -76,7 +76,7 @@ end)
 
 -- ==================== MENÚ + TEMPORIZADOR ====================
 function createMainGUI()
-    -- Temporizador arriba (empieza oculto)
+    -- Temporizador (empieza oculto)
     local TimerLabel = Instance.new("TextLabel")
     TimerLabel.Size = UDim2.new(0, 180, 0, 35)
     TimerLabel.Position = UDim2.new(0.5, -90, 0, 8)
@@ -146,7 +146,7 @@ function createMainGUI()
 
     TPBtn.MouseButton1Click:Connect(function()
         TeleportTo(7961, 715, 5144)
-        startTimer()   -- Solo aparece cuando haces TP
+        startTimer()   -- Solo aparece al hacer TP
     end)
 end
 
