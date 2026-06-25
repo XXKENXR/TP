@@ -31,6 +31,11 @@ KeyTab:CreateInput({
    end,
 })
 
+KeyTab:CreateParagraph({
+   Title = "Nota",
+   Content = "El mejor script",
+})
+
 -- ==================== MENÚ PRINCIPAL ====================
 function loadMainMenu()
    local MainTab = Window:CreateTab("Teleports", 4483362458)
@@ -46,10 +51,10 @@ function loadMainMenu()
       end,
    })
 
-   -- ==================== TEMPORIZADOR CIRCULAR ROJO ====================
+   -- ==================== TEMPORIZADOR CIRCULAR ====================
    local TimerBall = Instance.new("Frame")
-   TimerBall.Size = UDim2.new(0, 70, 0, 70)
-   TimerBall.Position = UDim2.new(0.85, 0, 0.1, 0)
+   TimerBall.Size = UDim2.new(0, 75, 0, 75)
+   TimerBall.Position = UDim2.new(0.82, 0, 0.12, 0)
    TimerBall.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
    TimerBall.Active = true
    TimerBall.Draggable = true
@@ -83,4 +88,4 @@ function loadMainMenu()
    end
 end
 
-print("🔒 Kenscript cargado - Key: XKR")
+print("🔒 Kenscript cargado - Usa la clave XKR")
