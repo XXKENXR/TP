@@ -1,3 +1,4 @@
+
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
@@ -31,27 +32,28 @@ KeyTab:CreateInput({
    end,
 })
 
+KeyTab:CreateParagraph({
+   Title = "Nota",
+   Content = "El mejor script",
+})
+
+-- ==================== TEMPORIZADOR EN PANTALLA (AFUERA) ====================
+local TimerLabel = Instance.new("TextLabel")
+TimerLabel.Size = UDim2.new(0, 180, 0, 40)
+TimerLabel.Position = UDim2.new(0.5, -90, 0.15, 0)
+TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
+TimerLabel.TextColor3 = Color3.new(1,1,1)
+TimerLabel.TextScaled = true
+TimerLabel.Font = Enum.Font.GothamBold
+TimerLabel.Text = "Temporizador: 45s"
+TimerLabel.Visible = false
+TimerLabel.Active = true
+TimerLabel.Draggable = true
+TimerLabel.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
 -- ==================== MENÚ PRINCIPAL ====================
 function loadMainMenu()
    local MainTab = Window:CreateTab("Teleports", 4483362458)
-
-   -- Temporizador
-   local TimerParagraph = MainTab:CreateParagraph({
-      Title = "Temporizador",
-      Content = "Temporizador: 45s",
-   })
-
-   local function startTimer()
-      local t = 45
-      spawn(function()
-         while t > 0 do
-            TimerParagraph:Set("Temporizador: " .. t .. "s")
-            wait(1)
-            t -= 1
-         end
-         TimerParagraph:Set("Temporizador: 0s")
-      end)
-   end
 
    MainTab:CreateButton({
       Name = "Etapa 16 TP",
@@ -59,10 +61,23 @@ function loadMainMenu()
          local root = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
          if root then
             root.CFrame = CFrame.new(7961, 720, 5144)
-            startTimer()   -- Solo se activa aquí
+            startTimer()
          end
       end,
    })
+end
+
+local function startTimer()
+   TimerLabel.Visible = true
+   local t = 45
+   spawn(function()
+      while t > 0 do
+         TimerLabel.Text = "Temporizador: " .. t .. "s"
+         wait(1)
+         t -= 1
+      end
+      TimerLabel.Text = "Temporizador: 0s"
+   end)
 end
 
 print("🔒 Kenscript cargado - Usa la clave XKR")
