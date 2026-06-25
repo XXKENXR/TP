@@ -1,13 +1,13 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "*Kenscript* 🍫+1 Escapa del teclado🍩",
+   Name = "*Kenscript* +1 Escapa del teclado",
    LoadingTitle = "Cargando...",
-   LoadingSubtitle = "by xxkenxr 🇵🇷",
+   LoadingSubtitle = "by xxkenxr",
    ConfigurationSaving = { Enabled = false },
 })
 
--- ==================== KEY SYSTEM ====================
+-- Key System
 local KeyTab = Window:CreateTab("Key System", 4483362458)
 
 KeyTab:CreateInput({
@@ -25,7 +25,7 @@ KeyTab:CreateInput({
 
 KeyTab:CreateParagraph({Title = "Nota", Content = "El mejor script"})
 
--- ==================== TEMPORIZADOR EN PANTALLA ====================
+-- Temporizador en pantalla
 local TimerLabel = Instance.new("TextLabel")
 TimerLabel.Size = UDim2.new(0, 180, 0, 40)
 TimerLabel.Position = UDim2.new(0.5, -90, 0.1, 0)
@@ -52,11 +52,10 @@ local function startTimer()
    end)
 end
 
--- ==================== AUTO WALK + REMOVE OBSTACLES ====================
+-- ==================== AUTO WALK ESTILO ORVA ====================
 local RunService = game:GetService("RunService")
 local autoWalking = false
 local walkConnection = nil
-local obstaclesRemoved = false
 
 local function toggleAutoWalk(state)
    autoWalking = state
@@ -67,36 +66,42 @@ local function toggleAutoWalk(state)
    if not humanoid then return end
 
    if state then
-      Rayfield:Notify({Title = "Auto Walk ON", Content = "Farmando wins...", Duration = 4})
+      Rayfield:Notify({Title = "Auto Walk ON", Content = "Recorriendo etapas hacia 200M wins...", Duration = 5})
       walkConnection = RunService.Heartbeat:Connect(function()
          if humanoid and autoWalking then
-            humanoid:Move(Vector3.new(1, 0, 0), true)
-            if math.random(1, 25) == 1 then
+            humanoid:Move(Vector3.new(0.8, 0, 0.6), true) -- Movimiento diagonal natural
+            if math.random(1, 20) == 1 then
                humanoid.Jump = true
             end
          end
       end)
    else
-      if walkConnection then walkConnection:Disconnect() end
+      if walkConnection then 
+         walkConnection:Disconnect() 
+      end
       Rayfield:Notify({Title = "Auto Walk OFF", Content = "Detenido", Duration = 3})
    end
 end
 
+-- ==================== REMOVE OBSTACLES MEJORADO ====================
+local obstaclesRemoved = false
+
 local function toggleRemoveObstacles(state)
    obstaclesRemoved = state
    if state then
-      Rayfield:Notify({Title = "Remove Obstacles ON", Content = "Eliminando obstáculos...", Duration = 4})
+      Rayfield:Notify({Title = "Remove Obstacles ON", Content = "Eliminando barreras...", Duration = 4})
       spawn(function()
          while obstaclesRemoved do
             for _, v in pairs(workspace:GetDescendants()) do
-               if v:IsA("BasePart") and (v.Name:find("Obstacle") or v.Name:find("Wall") or v.Name:find("Barrier") or v.CanCollide == true) then
-                  if v.Size.Y < 20 and v.Transparency < 1 then
+               if v:IsA("BasePart") and v.CanCollide and v.Transparency < 1 then
+                  local name = v.Name:lower()
+                  if name:find("wall") or name:find("obstacle") or name:find("barrier") or name:find("floor") or v.Size.Y > 5 then
                      v.CanCollide = false
-                     v.Transparency = 0.7
+                     v.Transparency = 0.6
                   end
                end
             end
-            wait(2)
+            wait(1.5)
          end
       end)
    else
@@ -104,7 +109,7 @@ local function toggleRemoveObstacles(state)
    end
 end
 
--- ==================== MENÚ PRINCIPAL ====================
+-- ==================== MENÚ ====================
 function loadMainMenu()
    local MainTab = Window:CreateTab("Teleports", 4483362458)
 
@@ -120,7 +125,7 @@ function loadMainMenu()
    })
 
    MainTab:CreateToggle({
-      Name = "Auto Walk (Farm Wins)",
+      Name = "Auto Walk (Recorre Etapas)",
       CurrentValue = false,
       Callback = function(Value)
          toggleAutoWalk(Value)
