@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
    Name = "*Kenscript* 🍫+1 Escapa del teclado🍩",
    LoadingTitle = "Cargando...",
-   LoadingSubtitle = "by xxkenxr🇵🇷",
+   LoadingSubtitle = "by xxkenxr 🇵🇷",
    ConfigurationSaving = { Enabled = false },
 })
 
@@ -52,10 +52,11 @@ local function startTimer()
    end)
 end
 
--- ==================== AUTO WALK ESTILO ORVA ====================
+-- ==================== AUTO WALK + REMOVE OBSTACLES ====================
 local RunService = game:GetService("RunService")
 local autoWalking = false
 local walkConnection = nil
+local obstaclesRemoved = false
 
 local function toggleAutoWalk(state)
    autoWalking = state
@@ -66,22 +67,40 @@ local function toggleAutoWalk(state)
    if not humanoid then return end
 
    if state then
-      Rayfield:Notify({Title = "Auto Walk ON", Content = "Farmando wins hasta 200M...", Duration = 5})
+      Rayfield:Notify({Title = "Auto Walk ON", Content = "Farmando wins...", Duration = 4})
       walkConnection = RunService.Heartbeat:Connect(function()
          if humanoid and autoWalking then
-            humanoid:Move(Vector3.new(1, 0, 0), true) -- Movimiento hacia adelante constante
-            -- Pequeño salto ocasional para superar obstáculos (como Orva)
-            if math.random(1, 30) == 1 then
+            humanoid:Move(Vector3.new(1, 0, 0), true)
+            if math.random(1, 25) == 1 then
                humanoid.Jump = true
             end
          end
       end)
    else
-      if walkConnection then
-         walkConnection:Disconnect()
-         walkConnection = nil
-      end
+      if walkConnection then walkConnection:Disconnect() end
       Rayfield:Notify({Title = "Auto Walk OFF", Content = "Detenido", Duration = 3})
+   end
+end
+
+local function toggleRemoveObstacles(state)
+   obstaclesRemoved = state
+   if state then
+      Rayfield:Notify({Title = "Remove Obstacles ON", Content = "Eliminando obstáculos...", Duration = 4})
+      spawn(function()
+         while obstaclesRemoved do
+            for _, v in pairs(workspace:GetDescendants()) do
+               if v:IsA("BasePart") and (v.Name:find("Obstacle") or v.Name:find("Wall") or v.Name:find("Barrier") or v.CanCollide == true) then
+                  if v.Size.Y < 20 and v.Transparency < 1 then
+                     v.CanCollide = false
+                     v.Transparency = 0.7
+                  end
+               end
+            end
+            wait(2)
+         end
+      end)
+   else
+      Rayfield:Notify({Title = "Remove Obstacles OFF", Content = "Reactivado", Duration = 3})
    end
 end
 
@@ -101,10 +120,18 @@ function loadMainMenu()
    })
 
    MainTab:CreateToggle({
-      Name = "Auto Walk (Hasta 200M Wins)",
+      Name = "Auto Walk (Farm Wins)",
       CurrentValue = false,
       Callback = function(Value)
          toggleAutoWalk(Value)
+      end,
+   })
+
+   MainTab:CreateToggle({
+      Name = "Remove Obstacles",
+      CurrentValue = false,
+      Callback = function(Value)
+         toggleRemoveObstacles(Value)
       end,
    })
 end
