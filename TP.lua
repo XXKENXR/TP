@@ -52,10 +52,11 @@ local function startTimer()
    end)
 end
 
--- ==================== AUTO WALK ESTILO ORVA ====================
+-- ==================== AUTO WALK + REMOVE OBSTACLES ESTILO ORVA ====================
 local RunService = game:GetService("RunService")
 local autoWalking = false
 local walkConnection = nil
+local obstaclesRemoved = false
 
 local function toggleAutoWalk(state)
    autoWalking = state
@@ -63,45 +64,42 @@ local function toggleAutoWalk(state)
    local character = player.Character
    if not character then return end
    local humanoid = character:FindFirstChild("Humanoid")
-   if not humanoid then return end
+   local root = character:FindFirstChild("HumanoidRootPart")
+   if not humanoid or not root then return end
 
    if state then
       Rayfield:Notify({Title = "Auto Walk ON", Content = "Recorriendo etapas hacia 200M wins...", Duration = 5})
       walkConnection = RunService.Heartbeat:Connect(function()
-         if humanoid and autoWalking then
-            humanoid:Move(Vector3.new(0.8, 0, 0.6), true) -- Movimiento diagonal natural
-            if math.random(1, 20) == 1 then
+         if humanoid and autoWalking and root then
+            humanoid:Move(Vector3.new(1, 0, 0), true) -- Adelante
+            if math.random(1, 15) == 1 then
                humanoid.Jump = true
             end
          end
       end)
    else
-      if walkConnection then 
-         walkConnection:Disconnect() 
-      end
+      if walkConnection then walkConnection:Disconnect() end
       Rayfield:Notify({Title = "Auto Walk OFF", Content = "Detenido", Duration = 3})
    end
 end
 
--- ==================== REMOVE OBSTACLES MEJORADO ====================
-local obstaclesRemoved = false
-
 local function toggleRemoveObstacles(state)
    obstaclesRemoved = state
    if state then
-      Rayfield:Notify({Title = "Remove Obstacles ON", Content = "Eliminando barreras...", Duration = 4})
+      Rayfield:Notify({Title = "Remove Obstacles ON", Content = "Solo obstáculos de etapas...", Duration = 4})
       spawn(function()
          while obstaclesRemoved do
             for _, v in pairs(workspace:GetDescendants()) do
                if v:IsA("BasePart") and v.CanCollide and v.Transparency < 1 then
                   local name = v.Name:lower()
-                  if name:find("wall") or name:find("obstacle") or name:find("barrier") or name:find("floor") or v.Size.Y > 5 then
+                  -- Solo obstáculos típicos de etapas (no pisos principales)
+                  if name:find("wall") or name:find("obstacle") or name:find("barrier") or name:find("block") or (v.Size.Y > 4 and v.Size.Y < 30) then
                      v.CanCollide = false
-                     v.Transparency = 0.6
+                     v.Transparency = 0.7
                   end
                end
             end
-            wait(1.5)
+            wait(1)
          end
       end)
    else
@@ -133,7 +131,7 @@ function loadMainMenu()
    })
 
    MainTab:CreateToggle({
-      Name = "Remove Obstacles",
+      Name = "Remove Obstacles (Etapas)",
       CurrentValue = false,
       Callback = function(Value)
          toggleRemoveObstacles(Value)
