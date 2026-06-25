@@ -1,15 +1,10 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local HEIGHT_OFFSET = 5
 local TIMER_DURATION = 45
 local CORRECT_KEY = "XKR"
-
-local recordedPath = {}
-local isRecording = false
-local isPlaying = false
-local playbackConnection = nil
 
 local function TeleportTo(x, y, z)
     local character = LocalPlayer.Character
@@ -80,7 +75,7 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MENÚ DESPLEGABLE ====================
+-- ==================== MENÚ DESPLEGABLE PEQUEÑO Y MOVIBLE ====================
 function createMainGUI()
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0, 200, 0, 38)
@@ -100,24 +95,14 @@ function createMainGUI()
     TitleBtn.Parent = MainFrame
 
     local Content = Instance.new("Frame")
-    Content.Size = UDim2.new(1,0,0,120)
+    Content.Size = UDim2.new(1,0,0,85)
     Content.Position = UDim2.new(0,0,1,0)
     Content.BackgroundColor3 = Color3.fromRGB(25,25,25)
     Content.Visible = false
     Content.Parent = MainFrame
 
-    local isOpen = false
-
-    TitleBtn.MouseButton1Click:Connect(function()
-        isOpen = not isOpen
-        Content.Visible = isOpen
-        MainFrame.Size = isOpen and UDim2.new(0, 200, 0, 170) or UDim2.new(0, 200, 0, 38)
-        TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
-    end)
-
-    -- Botón Etapa 16
     local TPBtn = Instance.new("TextButton")
-    TPBtn.Size = UDim2.new(1,-20,0,35)
+    TPBtn.Size = UDim2.new(1,-20,0,32)
     TPBtn.Position = UDim2.new(0,10,0,5)
     TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     TPBtn.Text = "Etapa 16 TP"
@@ -125,71 +110,54 @@ function createMainGUI()
     TPBtn.TextScaled = true
     TPBtn.Parent = Content
 
-    -- Botón Grabar Ruta
-    local RecordBtn = Instance.new("TextButton")
-    RecordBtn.Size = UDim2.new(1,-20,0,35)
-    RecordBtn.Position = UDim2.new(0,10,0,45)
-    RecordBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    RecordBtn.Text = "Grabar Ruta"
-    RecordBtn.TextColor3 = Color3.new(1,1,1)
-    RecordBtn.TextScaled = true
-    RecordBtn.Parent = Content
+    local isOpen = false
 
-    -- Botón Ejercer Ruta
-    local PlayBtn = Instance.new("TextButton")
-    PlayBtn.Size = UDim2.new(1,-20,0,35)
-    PlayBtn.Position = UDim2.new(0,10,0,85)
-    PlayBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    PlayBtn.Text = "Ejercer Ruta"
-    PlayBtn.TextColor3 = Color3.new(1,1,1)
-    PlayBtn.TextScaled = true
-    PlayBtn.Parent = Content
-
-    -- Funcionalidad Grabar Ruta
-    RecordBtn.MouseButton1Click:Connect(function()
-        isRecording = not isRecording
-        if isRecording then
-            recordedPath = {}
-            RecordBtn.Text = "Grabando... (ON)"
-            RecordBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-            table.insert(recordedPath, LocalPlayer.Character.HumanoidRootPart.Position)
-        else
-            RecordBtn.Text = "Grabar Ruta"
-            RecordBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-        end
-    end)
-
-    -- Funcionalidad Ejercer Ruta
-    PlayBtn.MouseButton1Click:Connect(function()
-        if #recordedPath == 0 then
-            print("No hay ruta grabada")
-            return
-        end
-        isPlaying = not isPlaying
-        if isPlaying then
-            PlayBtn.Text = "Ejecutando Ruta..."
-            PlayBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-            local i = 1
-            playbackConnection = RunService.Heartbeat:Connect(function()
-                if i <= #recordedPath then
-                    TeleportTo(recordedPath[i].X, recordedPath[i].Y, recordedPath[i].Z)
-                    i += 1
-                else
-                    playbackConnection:Disconnect()
-                    isPlaying = false
-                    PlayBtn.Text = "Ejercer Ruta"
-                    PlayBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-                end
-            end)
-        else
-            if playbackConnection then playbackConnection:Disconnect() end
-            PlayBtn.Text = "Ejercer Ruta"
-            PlayBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-        end
+    TitleBtn.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        Content.Visible = isOpen
+        MainFrame.Size = isOpen and UDim2.new(0, 200, 0, 130) or UDim2.new(0, 200, 0, 38)
+        TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
     end)
 
     TPBtn.MouseButton1Click:Connect(function()
         TeleportTo(7961, 715, 5144)
+    end)
+
+    -- Arrastrar mejorado para Celular
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    TitleBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+        end
+    end)
+
+    TitleBtn.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            update(input)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
     end)
 end
 
