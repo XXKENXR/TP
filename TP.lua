@@ -25,7 +25,7 @@ KeyTab:CreateInput({
 
 KeyTab:CreateParagraph({Title = "Nota", Content = "El mejor script"})
 
--- Temporizador en pantalla
+-- Temporizador
 local TimerLabel = Instance.new("TextLabel")
 TimerLabel.Size = UDim2.new(0, 180, 0, 40)
 TimerLabel.Position = UDim2.new(0.5, -90, 0.1, 0)
@@ -52,36 +52,39 @@ local function startTimer()
    end)
 end
 
--- ==================== AUTO WALK + REMOVE OBSTACLES ESTILO ORVA ====================
+-- ==================== AUTO WALK MEJORADO ====================
 local RunService = game:GetService("RunService")
 local autoWalking = false
 local walkConnection = nil
-local obstaclesRemoved = false
 
 local function toggleAutoWalk(state)
    autoWalking = state
-   local player = game.Players.LocalPlayer
-   local character = player.Character
+   local character = game.Players.LocalPlayer.Character
    if not character then return end
    local humanoid = character:FindFirstChild("Humanoid")
    local root = character:FindFirstChild("HumanoidRootPart")
    if not humanoid or not root then return end
 
    if state then
-      Rayfield:Notify({Title = "Auto Walk ON", Content = "Recorriendo etapas hacia 200M wins...", Duration = 5})
+      Rayfield:Notify({Title = "Auto Walk ON", Content = "Recorriendo etapas...", Duration = 5})
+      humanoid.WalkSpeed = 60  -- Velocidad buena para avanzar
       walkConnection = RunService.Heartbeat:Connect(function()
-         if humanoid and autoWalking and root then
-            humanoid:Move(Vector3.new(1, 0, 0), true) -- Adelante
-            if math.random(1, 15) == 1 then
+         if autoWalking then
+            humanoid:Move(Vector3.new(1, 0, 0), true)
+            if math.random(1, 12) == 1 then
                humanoid.Jump = true
             end
          end
       end)
    else
       if walkConnection then walkConnection:Disconnect() end
+      if humanoid then humanoid.WalkSpeed = 16 end
       Rayfield:Notify({Title = "Auto Walk OFF", Content = "Detenido", Duration = 3})
    end
 end
+
+-- ==================== REMOVE OBSTACLES (SOLO ETAPAS) ====================
+local obstaclesRemoved = false
 
 local function toggleRemoveObstacles(state)
    obstaclesRemoved = state
@@ -92,14 +95,16 @@ local function toggleRemoveObstacles(state)
             for _, v in pairs(workspace:GetDescendants()) do
                if v:IsA("BasePart") and v.CanCollide and v.Transparency < 1 then
                   local name = v.Name:lower()
-                  -- Solo obstáculos típicos de etapas (no pisos principales)
-                  if name:find("wall") or name:find("obstacle") or name:find("barrier") or name:find("block") or (v.Size.Y > 4 and v.Size.Y < 30) then
+                  local size = v.Size
+                  -- Solo obstáculos típicos de etapas (evita pisos y techos grandes)
+                  if (name:find("wall") or name:find("obstacle") or name:find("barrier") or name:find("block") or name:find("part")) 
+                     and size.Y > 3 and size.Y < 40 and size.X < 50 and size.Z < 50 then
                      v.CanCollide = false
-                     v.Transparency = 0.7
+                     v.Transparency = 0.8
                   end
                end
             end
-            wait(1)
+            wait(1.2)
          end
       end)
    else
@@ -107,7 +112,7 @@ local function toggleRemoveObstacles(state)
    end
 end
 
--- ==================== MENÚ ====================
+-- Menú
 function loadMainMenu()
    local MainTab = Window:CreateTab("Teleports", 4483362458)
 
