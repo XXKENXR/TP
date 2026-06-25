@@ -2,7 +2,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "*Kenscript* 🍫+1 Escapa del teclado🍩",
-   LoadingTitle = "Cargando Script...",
+   LoadingTitle = "Cargando...",
    LoadingSubtitle = "by xxkenxr🇵🇷",
    ConfigurationSaving = { Enabled = false },
 })
@@ -12,7 +12,7 @@ local KeyTab = Window:CreateTab("Key System", 4483362458)
 
 KeyTab:CreateInput({
    Name = "Key",
-   PlaceholderText = "Ingresa la clave aquí...",
+   PlaceholderText = "Ingresa la clave...",
    Callback = function(Value)
       if Value == "XKR" then
          Rayfield:Notify({
@@ -31,27 +31,11 @@ KeyTab:CreateInput({
    end,
 })
 
-KeyTab:CreateParagraph({
-   Title = "Nota",
-   Content = "El mejor script",
-})
-
 -- ==================== MENÚ PRINCIPAL ====================
 function loadMainMenu()
    local MainTab = Window:CreateTab("Teleports", 4483362458)
 
-   MainTab:CreateButton({
-      Name = "Etapa 16 TP",
-      Callback = function()
-         local root = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-         if root then
-            root.CFrame = CFrame.new(7961, 720, 5144)
-            startTimer()
-         end
-      end,
-   })
-
-   -- Temporizador (solo aparece al usar TP)
+   -- Temporizador
    local TimerParagraph = MainTab:CreateParagraph({
       Title = "Temporizador",
       Content = "Temporizador: 45s",
@@ -68,6 +52,17 @@ function loadMainMenu()
          TimerParagraph:Set("Temporizador: 0s")
       end)
    end
+
+   MainTab:CreateButton({
+      Name = "Etapa 16 TP",
+      Callback = function()
+         local root = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+         if root then
+            root.CFrame = CFrame.new(7961, 720, 5144)
+            startTimer()   -- Solo se activa aquí
+         end
+      end,
+   })
 end
 
 print("🔒 Kenscript cargado - Usa la clave XKR")
