@@ -1,147 +1,154 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local Window = Rayfield:CreateWindow({
-   Name = "*Kenscript* +1 Escapa del teclado",
-   LoadingTitle = "Cargando...",
-   LoadingSubtitle = "by xxkenxr",
-   ConfigurationSaving = { Enabled = false },
-})
+local HEIGHT_OFFSET = 5
+local TIMER_DURATION = 45
+local CORRECT_KEY = "XKR"
 
--- Key System
-local KeyTab = Window:CreateTab("Key System", 4483362458)
-
-KeyTab:CreateInput({
-   Name = "Key",
-   PlaceholderText = "Ingresa la clave...",
-   Callback = function(Value)
-      if Value == "XKR" then
-         Rayfield:Notify({Title = "✅ Key Correcta", Content = "Acceso concedido", Duration = 4})
-         loadMainMenu()
-      else
-         Rayfield:Notify({Title = "❌ Key Incorrecta", Content = "Key Invalid", Duration = 3})
-      end
-   end,
-})
-
-KeyTab:CreateParagraph({Title = "Nota", Content = "El mejor script"})
-
--- Temporizador
-local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(0, 180, 0, 40)
-TimerLabel.Position = UDim2.new(0.5, -90, 0.1, 0)
-TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
-TimerLabel.TextColor3 = Color3.new(1,1,1)
-TimerLabel.TextScaled = true
-TimerLabel.Font = Enum.Font.GothamBold
-TimerLabel.Text = "Temporizador: 45s"
-TimerLabel.Visible = false
-TimerLabel.Active = true
-TimerLabel.Draggable = true
-TimerLabel.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-local function startTimer()
-   TimerLabel.Visible = true
-   local t = 45
-   spawn(function()
-      while t > 0 do
-         TimerLabel.Text = "Temporizador: " .. t .. "s"
-         wait(1)
-         t -= 1
-      end
-      TimerLabel.Text = "Temporizador: 0s"
-   end)
+local function TeleportTo(x, y, z)
+    local character = LocalPlayer.Character
+    if not character then return end
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    root.CFrame = CFrame.new(Vector3.new(x, y + HEIGHT_OFFSET, z))
 end
 
--- ==================== AUTO WALK MEJORADO ====================
-local RunService = game:GetService("RunService")
-local autoWalking = false
-local walkConnection = nil
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local function toggleAutoWalk(state)
-   autoWalking = state
-   local character = game.Players.LocalPlayer.Character
-   if not character then return end
-   local humanoid = character:FindFirstChild("Humanoid")
-   local root = character:FindFirstChild("HumanoidRootPart")
-   if not humanoid or not root then return end
+-- ==================== KEY SYSTEM ====================
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Size = UDim2.new(0, 320, 0, 200)
+KeyFrame.Position = UDim2.new(0.5, -160, 0.35, 0)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+KeyFrame.Active = true
+KeyFrame.Draggable = true
+KeyFrame.Parent = ScreenGui
 
-   if state then
-      Rayfield:Notify({Title = "Auto Walk ON", Content = "Recorriendo etapas...", Duration = 5})
-      humanoid.WalkSpeed = 60  -- Velocidad buena para avanzar
-      walkConnection = RunService.Heartbeat:Connect(function()
-         if autoWalking then
-            humanoid:Move(Vector3.new(1, 0, 0), true)
-            if math.random(1, 12) == 1 then
-               humanoid.Jump = true
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1,0,0,50)
+Title.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+Title.Text = "*Kenscript* +1 Escapa del teclado"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextScaled = true
+Title.Font = Enum.Font.GothamBold
+Title.Parent = KeyFrame
+
+local Subtitle = Instance.new("TextLabel")
+Subtitle.Size = UDim2.new(1,0,0,30)
+Subtitle.Position = UDim2.new(0,0,0,50)
+Subtitle.BackgroundTransparency = 1
+Subtitle.Text = "Script by xxkenxr 🇵🇷"
+Subtitle.TextColor3 = Color3.fromRGB(200,200,200)
+Subtitle.TextScaled = true
+Subtitle.Parent = KeyFrame
+
+local KeyBox = Instance.new("TextBox")
+KeyBox.Size = UDim2.new(0.8,0,0,40)
+KeyBox.Position = UDim2.new(0.1,0,0.45,0)
+KeyBox.PlaceholderText = "Insert key"
+KeyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+KeyBox.TextColor3 = Color3.new(1,1,1)
+KeyBox.TextScaled = true
+KeyBox.Parent = KeyFrame
+
+local ConfirmBtn = Instance.new("TextButton")
+ConfirmBtn.Size = UDim2.new(0.6,0,0,40)
+ConfirmBtn.Position = UDim2.new(0.2,0,0.7,0)
+ConfirmBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
+ConfirmBtn.Text = "Confirmar"
+ConfirmBtn.TextColor3 = Color3.new(1,1,1)
+ConfirmBtn.TextScaled = true
+ConfirmBtn.Parent = KeyFrame
+
+ConfirmBtn.MouseButton1Click:Connect(function()
+    if KeyBox.Text == CORRECT_KEY then
+        KeyFrame:Destroy()
+        createMainGUI()
+    else
+        KeyBox.Text = ""
+        KeyBox.PlaceholderText = "Key Invalid"
+        wait(1.5)
+        KeyBox.PlaceholderText = "Insert key"
+    end
+end)
+
+-- ==================== MENÚ + TEMPORIZADOR ====================
+function createMainGUI()
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 200, 0, 38)
+    MainFrame.Position = UDim2.new(0.5, -100, 0.2, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    MainFrame.Parent = ScreenGui
+
+    local TitleBtn = Instance.new("TextButton")
+    TitleBtn.Size = UDim2.new(1,0,1,0)
+    TitleBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    TitleBtn.Text = "Teleports ▼"
+    TitleBtn.TextColor3 = Color3.new(1,1,1)
+    TitleBtn.TextScaled = true
+    TitleBtn.Font = Enum.Font.GothamBold
+    TitleBtn.Parent = MainFrame
+
+    local Content = Instance.new("Frame")
+    Content.Size = UDim2.new(1,0,0,45)
+    Content.Position = UDim2.new(0,0,1,0)
+    Content.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    Content.Visible = false
+    Content.Parent = MainFrame
+
+    local TPBtn = Instance.new("TextButton")
+    TPBtn.Size = UDim2.new(1,-20,0,35)
+    TPBtn.Position = UDim2.new(0,10,0,5)
+    TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    TPBtn.Text = "Etapa 16 TP"
+    TPBtn.TextColor3 = Color3.new(1,1,1)
+    TPBtn.TextScaled = true
+    TPBtn.Parent = Content
+
+    local isOpen = false
+
+    TitleBtn.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        Content.Visible = isOpen
+        MainFrame.Size = isOpen and UDim2.new(0, 200, 0, 88) or UDim2.new(0, 200, 0, 38)
+        TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
+    end)
+
+    -- ==================== TEMPORIZADOR NORMAL (Solo al usar TP) ====================
+    local TimerLabel = Instance.new("TextLabel")
+    TimerLabel.Size = UDim2.new(0, 200, 0, 40)
+    TimerLabel.Position = UDim2.new(0.5, -100, 0.08, 0)
+    TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
+    TimerLabel.TextColor3 = Color3.new(1,1,1)
+    TimerLabel.TextScaled = true
+    TimerLabel.Font = Enum.Font.GothamBold
+    TimerLabel.Text = "Temporizador: 45s"
+    TimerLabel.Visible = false
+    TimerLabel.Active = true
+    TimerLabel.Draggable = true
+    TimerLabel.Parent = ScreenGui
+
+    local function startTimer()
+        TimerLabel.Visible = true
+        local t = TIMER_DURATION
+        spawn(function()
+            while t > 0 do
+                TimerLabel.Text = "Temporizador: " .. t .. "s"
+                wait(1)
+                t -= 1
             end
-         end
-      end)
-   else
-      if walkConnection then walkConnection:Disconnect() end
-      if humanoid then humanoid.WalkSpeed = 16 end
-      Rayfield:Notify({Title = "Auto Walk OFF", Content = "Detenido", Duration = 3})
-   end
+            TimerLabel.Text = "Temporizador: 0s"
+        end)
+    end
+
+    TPBtn.MouseButton1Click:Connect(function()
+        TeleportTo(7961, 715, 5144)
+        startTimer()
+    end)
 end
 
--- ==================== REMOVE OBSTACLES (SOLO ETAPAS) ====================
-local obstaclesRemoved = false
-
-local function toggleRemoveObstacles(state)
-   obstaclesRemoved = state
-   if state then
-      Rayfield:Notify({Title = "Remove Obstacles ON", Content = "Solo obstáculos de etapas...", Duration = 4})
-      spawn(function()
-         while obstaclesRemoved do
-            for _, v in pairs(workspace:GetDescendants()) do
-               if v:IsA("BasePart") and v.CanCollide and v.Transparency < 1 then
-                  local name = v.Name:lower()
-                  local size = v.Size
-                  -- Solo obstáculos típicos de etapas (evita pisos y techos grandes)
-                  if (name:find("wall") or name:find("obstacle") or name:find("barrier") or name:find("block") or name:find("part")) 
-                     and size.Y > 3 and size.Y < 40 and size.X < 50 and size.Z < 50 then
-                     v.CanCollide = false
-                     v.Transparency = 0.8
-                  end
-               end
-            end
-            wait(1.2)
-         end
-      end)
-   else
-      Rayfield:Notify({Title = "Remove Obstacles OFF", Content = "Reactivado", Duration = 3})
-   end
-end
-
--- Menú
-function loadMainMenu()
-   local MainTab = Window:CreateTab("Teleports", 4483362458)
-
-   MainTab:CreateButton({
-      Name = "Etapa 16 TP",
-      Callback = function()
-         local root = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-         if root then
-            root.CFrame = CFrame.new(7961, 720, 5144)
-            startTimer()
-         end
-      end,
-   })
-
-   MainTab:CreateToggle({
-      Name = "Auto Walk (Recorre Etapas)",
-      CurrentValue = false,
-      Callback = function(Value)
-         toggleAutoWalk(Value)
-      end,
-   })
-
-   MainTab:CreateToggle({
-      Name = "Remove Obstacles (Etapas)",
-      CurrentValue = false,
-      Callback = function(Value)
-         toggleRemoveObstacles(Value)
-      end,
-   })
-end
-
-print("🔒 Kenscript cargado - Usa la clave XKR")
+print("🔒 Script cargado - Usa la clave XKR")
