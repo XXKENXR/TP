@@ -2,8 +2,8 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "*Kenscript* 🍫+1 Escapa del teclado🍩",
-   LoadingTitle = "Cargando...",
-   LoadingSubtitle = "by xxkenxr",
+   LoadingTitle = "Cargando Script...",
+   LoadingSubtitle = "by xxkenxr🇵🇷",
    ConfigurationSaving = { Enabled = false },
 })
 
@@ -12,7 +12,7 @@ local KeyTab = Window:CreateTab("Key System", 4483362458)
 
 KeyTab:CreateInput({
    Name = "Key",
-   PlaceholderText = "Ingresa la clave...",
+   PlaceholderText = "Ingresa la clave aquí...",
    Callback = function(Value)
       if Value == "XKR" then
          Rayfield:Notify({
@@ -51,39 +51,21 @@ function loadMainMenu()
       end,
    })
 
-   -- ==================== TEMPORIZADOR CIRCULAR ====================
-   local TimerBall = Instance.new("Frame")
-   TimerBall.Size = UDim2.new(0, 75, 0, 75)
-   TimerBall.Position = UDim2.new(0.82, 0, 0.12, 0)
-   TimerBall.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-   TimerBall.Active = true
-   TimerBall.Draggable = true
-   TimerBall.Visible = false
-   TimerBall.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-   local BallCorner = Instance.new("UICorner")
-   BallCorner.CornerRadius = UDim.new(1, 0)
-   BallCorner.Parent = TimerBall
-
-   local TimerText = Instance.new("TextLabel")
-   TimerText.Size = UDim2.new(1,0,1,0)
-   TimerText.BackgroundTransparency = 1
-   TimerText.Text = "45"
-   TimerText.TextColor3 = Color3.new(1,1,1)
-   TimerText.TextScaled = true
-   TimerText.Font = Enum.Font.GothamBold
-   TimerText.Parent = TimerBall
+   -- Temporizador (solo aparece al usar TP)
+   local TimerParagraph = MainTab:CreateParagraph({
+      Title = "Temporizador",
+      Content = "Temporizador: 45s",
+   })
 
    local function startTimer()
-      TimerBall.Visible = true
       local t = 45
       spawn(function()
          while t > 0 do
-            TimerText.Text = t
+            TimerParagraph:Set("Temporizador: " .. t .. "s")
             wait(1)
             t -= 1
          end
-         TimerText.Text = "0"
+         TimerParagraph:Set("Temporizador: 0s")
       end)
    end
 end
