@@ -1,9 +1,15 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
 local HEIGHT_OFFSET = 5
 local TIMER_DURATION = 45
 local CORRECT_KEY = "XKR"
+
+local recordedPath = {}
+local isRecording = false
+local isPlaying = false
+local playbackConnection = nil
 
 local function TeleportTo(x, y, z)
     local character = LocalPlayer.Character
@@ -74,12 +80,11 @@ ConfirmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== MAIN GUI ====================
+-- ==================== MENÚ DESPLEGABLE ====================
 function createMainGUI()
-    -- Menú pequeño
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 190, 0, 38)
-    MainFrame.Position = UDim2.new(0.5, -95, 0.2, 0)
+    MainFrame.Size = UDim2.new(0, 200, 0, 38)
+    MainFrame.Position = UDim2.new(0.5, -100, 0.2, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
     MainFrame.Active = true
     MainFrame.Draggable = true
@@ -95,58 +100,96 @@ function createMainGUI()
     TitleBtn.Parent = MainFrame
 
     local Content = Instance.new("Frame")
-    Content.Size = UDim2.new(1,0,0,40)
+    Content.Size = UDim2.new(1,0,0,120)
     Content.Position = UDim2.new(0,0,1,0)
     Content.BackgroundColor3 = Color3.fromRGB(25,25,25)
     Content.Visible = false
     Content.Parent = MainFrame
-
-    local TPBtn = Instance.new("TextButton")
-    TPBtn.Size = UDim2.new(1,-20,0,32)
-    TPBtn.Position = UDim2.new(0,10,0,4)
-    TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    TPBtn.Text = "Etapa 16 TP"
-    TPBtn.TextColor3 = Color3.new(1,1,1)
-    TPBtn.TextScaled = true
-    TPBtn.Parent = Content
 
     local isOpen = false
 
     TitleBtn.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         Content.Visible = isOpen
-        MainFrame.Size = isOpen and UDim2.new(0, 190, 0, 83) or UDim2.new(0, 190, 0, 38)
+        MainFrame.Size = isOpen and UDim2.new(0, 200, 0, 170) or UDim2.new(0, 200, 0, 38)
         TitleBtn.Text = isOpen and "Teleports ▲" or "Teleports ▼"
     end)
 
-    -- TEMPORIZADOR (solo aparece al hacer TP)
-    local TimerLabel = Instance.new("TextLabel")
-    TimerLabel.Size = UDim2.new(0, 180, 0, 35)
-    TimerLabel.Position = UDim2.new(0.5, -90, 0, 8)
-    TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
-    TimerLabel.TextColor3 = Color3.new(1,1,1)
-    TimerLabel.TextScaled = true
-    TimerLabel.Font = Enum.Font.GothamBold
-    TimerLabel.Text = "Temporizador: 45s"
-    TimerLabel.Visible = false
-    TimerLabel.Parent = ScreenGui
+    -- Botón Etapa 16
+    local TPBtn = Instance.new("TextButton")
+    TPBtn.Size = UDim2.new(1,-20,0,35)
+    TPBtn.Position = UDim2.new(0,10,0,5)
+    TPBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    TPBtn.Text = "Etapa 16 TP"
+    TPBtn.TextColor3 = Color3.new(1,1,1)
+    TPBtn.TextScaled = true
+    TPBtn.Parent = Content
 
-    local function startTimer()
-        TimerLabel.Visible = true
-        local t = TIMER_DURATION
-        spawn(function()
-            while t > 0 do
-                TimerLabel.Text = "Temporizador: " .. t .. "s"
-                wait(1)
-                t -= 1
-            end
-            TimerLabel.Text = "Temporizador: 0s"
-        end)
-    end
+    -- Botón Grabar Ruta
+    local RecordBtn = Instance.new("TextButton")
+    RecordBtn.Size = UDim2.new(1,-20,0,35)
+    RecordBtn.Position = UDim2.new(0,10,0,45)
+    RecordBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    RecordBtn.Text = "Grabar Ruta"
+    RecordBtn.TextColor3 = Color3.new(1,1,1)
+    RecordBtn.TextScaled = true
+    RecordBtn.Parent = Content
+
+    -- Botón Ejercer Ruta
+    local PlayBtn = Instance.new("TextButton")
+    PlayBtn.Size = UDim2.new(1,-20,0,35)
+    PlayBtn.Position = UDim2.new(0,10,0,85)
+    PlayBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    PlayBtn.Text = "Ejercer Ruta"
+    PlayBtn.TextColor3 = Color3.new(1,1,1)
+    PlayBtn.TextScaled = true
+    PlayBtn.Parent = Content
+
+    -- Funcionalidad Grabar Ruta
+    RecordBtn.MouseButton1Click:Connect(function()
+        isRecording = not isRecording
+        if isRecording then
+            recordedPath = {}
+            RecordBtn.Text = "Grabando... (ON)"
+            RecordBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            table.insert(recordedPath, LocalPlayer.Character.HumanoidRootPart.Position)
+        else
+            RecordBtn.Text = "Grabar Ruta"
+            RecordBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        end
+    end)
+
+    -- Funcionalidad Ejercer Ruta
+    PlayBtn.MouseButton1Click:Connect(function()
+        if #recordedPath == 0 then
+            print("No hay ruta grabada")
+            return
+        end
+        isPlaying = not isPlaying
+        if isPlaying then
+            PlayBtn.Text = "Ejecutando Ruta..."
+            PlayBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            local i = 1
+            playbackConnection = RunService.Heartbeat:Connect(function()
+                if i <= #recordedPath then
+                    TeleportTo(recordedPath[i].X, recordedPath[i].Y, recordedPath[i].Z)
+                    i += 1
+                else
+                    playbackConnection:Disconnect()
+                    isPlaying = false
+                    PlayBtn.Text = "Ejercer Ruta"
+                    PlayBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+                end
+            end)
+        else
+            if playbackConnection then playbackConnection:Disconnect() end
+            PlayBtn.Text = "Ejercer Ruta"
+            PlayBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        end
+    end)
 
     TPBtn.MouseButton1Click:Connect(function()
         TeleportTo(7961, 715, 5144)
-        startTimer()
     end)
 end
 
