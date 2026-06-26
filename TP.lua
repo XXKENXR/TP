@@ -2,34 +2,45 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "*Kenscript* +1 Escapa del teclado",
-   LoadingTitle = "Cargando...",
+   LoadingTitle = "Cargando Kenscript...",
    LoadingSubtitle = "by xxkenxr",
    ConfigurationSaving = { Enabled = false },
 })
 
--- Key System
+-- ==================== KEY SYSTEM ====================
 local KeyTab = Window:CreateTab("Key System", 4483362458)
 
 KeyTab:CreateInput({
    Name = "Key",
-   PlaceholderText = "Ingresa la clave...",
+   PlaceholderText = "Ingresa la clave aquí...",
    Callback = function(Value)
       if Value == "XKR" then
-         Rayfield:Notify({Title = "✅ Key Correcta", Content = "Acceso concedido", Duration = 4})
+         Rayfield:Notify({
+            Title = "✅ Key Correcta",
+            Content = "Acceso concedido",
+            Duration = 4,
+         })
          loadMainMenu()
       else
-         Rayfield:Notify({Title = "❌ Key Incorrecta", Content = "Key Invalid", Duration = 3})
+         Rayfield:Notify({
+            Title = "❌ Key Incorrecta",
+            Content = "Key Invalid",
+            Duration = 3,
+         })
       end
    end,
 })
 
-KeyTab:CreateParagraph({Title = "Nota", Content = "El mejor script"})
+KeyTab:CreateParagraph({
+   Title = "Nota",
+   Content = "El mejor script",
+})
 
--- Temporizador
+-- ==================== TEMPORIZADOR EN PANTALLA ====================
 local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(0, 180, 0, 40)
-TimerLabel.Position = UDim2.new(0.5, -90, 0.1, 0)
-TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 80, 180)
+TimerLabel.Size = UDim2.new(0, 220, 0, 45)
+TimerLabel.Position = UDim2.new(0.5, -110, 0.12, 0)
+TimerLabel.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
 TimerLabel.TextColor3 = Color3.new(1,1,1)
 TimerLabel.TextScaled = true
 TimerLabel.Font = Enum.Font.GothamBold
@@ -46,100 +57,24 @@ local function startTimer()
       while t > 0 do
          TimerLabel.Text = "Temporizador: " .. t .. "s"
          wait(1)
-         t -= 1
+         t = t - 1
       end
       TimerLabel.Text = "Temporizador: 0s"
    end)
 end
 
--- ==================== AUTO WALK MEJORADO ====================
-local RunService = game:GetService("RunService")
-local autoWalking = false
-local walkConnection = nil
-
-local function toggleAutoWalk(state)
-   autoWalking = state
-   local character = game.Players.LocalPlayer.Character
-   if not character then return end
-   local humanoid = character:FindFirstChild("Humanoid")
-   local root = character:FindFirstChild("HumanoidRootPart")
-   if not humanoid or not root then return end
-
-   if state then
-      Rayfield:Notify({Title = "Auto Walk ON", Content = "Recorriendo etapas...", Duration = 5})
-      humanoid.WalkSpeed = 60  -- Velocidad buena para avanzar
-      walkConnection = RunService.Heartbeat:Connect(function()
-         if autoWalking then
-            humanoid:Move(Vector3.new(1, 0, 0), true)
-            if math.random(1, 12) == 1 then
-               humanoid.Jump = true
-            end
-         end
-      end)
-   else
-      if walkConnection then walkConnection:Disconnect() end
-      if humanoid then humanoid.WalkSpeed = 16 end
-      Rayfield:Notify({Title = "Auto Walk OFF", Content = "Detenido", Duration = 3})
-   end
-end
-
--- ==================== REMOVE OBSTACLES (SOLO ETAPAS) ====================
-local obstaclesRemoved = false
-
-local function toggleRemoveObstacles(state)
-   obstaclesRemoved = state
-   if state then
-      Rayfield:Notify({Title = "Remove Obstacles ON", Content = "Solo obstáculos de etapas...", Duration = 4})
-      spawn(function()
-         while obstaclesRemoved do
-            for _, v in pairs(workspace:GetDescendants()) do
-               if v:IsA("BasePart") and v.CanCollide and v.Transparency < 1 then
-                  local name = v.Name:lower()
-                  local size = v.Size
-                  -- Solo obstáculos típicos de etapas (evita pisos y techos grandes)
-                  if (name:find("wall") or name:find("obstacle") or name:find("barrier") or name:find("block") or name:find("part")) 
-                     and size.Y > 3 and size.Y < 40 and size.X < 50 and size.Z < 50 then
-                     v.CanCollide = false
-                     v.Transparency = 0.8
-                  end
-               end
-            end
-            wait(1.2)
-         end
-      end)
-   else
-      Rayfield:Notify({Title = "Remove Obstacles OFF", Content = "Reactivado", Duration = 3})
-   end
-end
-
--- Menú
+-- ==================== MENÚ TELEPORTS ====================
 function loadMainMenu()
    local MainTab = Window:CreateTab("Teleports", 4483362458)
 
    MainTab:CreateButton({
       Name = "Etapa 16 TP",
       Callback = function()
-         local root = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+         local root = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
          if root then
             root.CFrame = CFrame.new(7961, 720, 5144)
             startTimer()
          end
-      end,
-   })
-
-   MainTab:CreateToggle({
-      Name = "Auto Walk (Recorre Etapas)",
-      CurrentValue = false,
-      Callback = function(Value)
-         toggleAutoWalk(Value)
-      end,
-   })
-
-   MainTab:CreateToggle({
-      Name = "Remove Obstacles (Etapas)",
-      CurrentValue = false,
-      Callback = function(Value)
-         toggleRemoveObstacles(Value)
       end,
    })
 end
