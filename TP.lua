@@ -68,11 +68,11 @@ function loadMainMenu()
    local MainTab = Window:CreateTab("Teleports", 4483362458)
 
    MainTab:CreateButton({
-      Name = "World 3",
+      Name = "Etapa 16 TP",
       Callback = function()
          local root = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
          if root then
-            root.CFrame = CFrame.new(1469, 67, 521)
+            root.CFrame = CFrame.new(-1469, -67 + 5, -521)  -- Nuevas coordenadas
             startTimer()
          end
       end,
