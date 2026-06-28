@@ -36,7 +36,7 @@ KeyTab:CreateParagraph({
    Content = "El mejor script",
 })
 
--- ==================== TEMPORIZADOR EN PANTALLA ====================
+-- ==================== TEMPORIZADOR EN PANTALLA (45 SEGUNDOS) ====================
 local TimerLabel = Instance.new("TextLabel")
 TimerLabel.Size = UDim2.new(0, 220, 0, 45)
 TimerLabel.Position = UDim2.new(0.5, -110, 0.12, 0)
@@ -72,7 +72,7 @@ function loadMainMenu()
       Callback = function()
          local root = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
          if root then
-            root.CFrame = CFrame.new(-1469, -67 + 5, -521)  -- Nuevas coordenadas
+            root.CFrame = CFrame.new(-1469, -67 + 5, -521)
             startTimer()
          end
       end,
