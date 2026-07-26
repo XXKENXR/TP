@@ -70,10 +70,20 @@ function loadMainMenu()
    MainTab:CreateButton({
       Name = "Etapa 16 TP",
       Callback = function()
-         local root = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+         local player = game.Players.LocalPlayer
+         local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
          if root then
-            root.CFrame = CFrame.new(102, 816, 950)
+            -- Teleport a las coordenadas solicitadas
+            root.CFrame = CFrame.new(808, 814, 915)
             startTimer()
+
+            -- Solicitar al servidor la validación/otorgamiento de la win si existe el RemoteEvent
+            local ev = game:GetService("ReplicatedStorage"):FindFirstChild("ClaimWin")
+            if ev and ev:IsA("RemoteEvent") then
+               pcall(function()
+                  ev:FireServer()
+               end)
+            end
          end
       end,
    })
