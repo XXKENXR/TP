@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local REMOTE_NAME = "ClaimWin"
-local TARGET_POS = Vector3.new(102, 816, 950)
+local TARGET_POS = Vector3.new(808, 814, 915)
 local ALLOWED_RADIUS = 8          -- distancia máxima (en studs) desde TARGET_POS para validar
 local COOLDOWN_SECONDS = 3        -- evita spam
 
