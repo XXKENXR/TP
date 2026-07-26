@@ -72,7 +72,7 @@ function loadMainMenu()
       Callback = function()
          local root = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
          if root then
-            root.CFrame = CFrame.new(-1469, -67 + 5, -521)
+            root.CFrame = CFrame.new(102, 816, 950)
             startTimer()
          end
       end,
