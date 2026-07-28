@@ -1,77 +1,116 @@
--- +1 Speed Keyboard Escape - Autofarm bbno$ Etapa 13 (Versión Final)
--- Hace exactamente la secuencia del video
+--[[
+    +1 Speed / Keyboard Escape
+    Autofarm Etapa 13 + Control de Velocidad (hasta 300)
+]]
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Keyboard Escape Autofarm",
+   Name = "Keyboard Escape | Autofarm",
    LoadingTitle = "Cargando...",
-   LoadingSubtitle = "Etapa 13 bbno$",
+   LoadingSubtitle = "Etapa 13",
    ConfigurationSaving = { Enabled = false },
-   Discord = { Enabled = false },
    KeySystem = false,
 })
 
-local Tab = Window:CreateTab("Autofarm", 4483362458)
+local Tab = Window:CreateTab("Main", 4483362458)
 
 local autofarm = false
 local selectedStage = 13
+local currentSpeed = 300 -- velocidad por defecto
 
-local function Notify(title, content)
+local function Notify(title, text)
    Rayfield:Notify({
       Title = title,
-      Content = content,
+      Content = text,
       Duration = 2.5,
    })
 end
 
+-------------------------------------------------
+-- TOGGLE AUTOFARM
+-------------------------------------------------
 Tab:CreateToggle({
-   Name = "Autofarm Etapa 13",
+   Name = "Autofarm",
    CurrentValue = false,
-   Flag = "AutoFarm",
+   Flag = "AutofarmToggle",
    Callback = function(Value)
       autofarm = Value
       if Value then
-         Notify("Autofarm", "Activado - Haciendo la ruta completa")
+         Notify("Autofarm", "Activado - Etapa " .. selectedStage .. " | Velocidad: " .. currentSpeed)
       else
          Notify("Autofarm", "Desactivado")
       end
    end,
 })
 
-Tab:CreateDropdown({
-   Name = "Etapa",
-   Options = {"12", "13", "14"},
-   CurrentOption = {"13"},
-   Callback = function(Option)
-      selectedStage = tonumber(Option[1])
-      Notify("Etapa", "Seleccionada: " .. selectedStage)
+-------------------------------------------------
+-- SLIDER DE VELOCIDAD (hasta 300)
+-------------------------------------------------
+Tab:CreateSlider({
+   Name = "Velocidad",
+   Range = {16, 300},
+   Increment = 1,
+   Suffix = " Speed",
+   CurrentValue = 300,
+   Flag = "SpeedSlider",
+   Callback = function(Value)
+      currentSpeed = Value
+      -- Aplicar inmediatamente si el personaje existe
+      local char = game.Players.LocalPlayer.Character
+      if char then
+         local humanoid = char:FindFirstChildOfClass("Humanoid")
+         if humanoid then
+            humanoid.WalkSpeed = currentSpeed
+         end
+      end
    end,
 })
 
--- Función para hacer click seguro en botones
-local function ClickGUI(text)
-   local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-   
+-------------------------------------------------
+-- SELECCIONAR ETAPA
+-------------------------------------------------
+Tab:CreateDropdown({
+   Name = "Seleccionar Etapa",
+   Options = {"11", "12", "13", "14"},
+   CurrentOption = {"13"},
+   MultipleOptions = false,
+   Flag = "StageDropdown",
+   Callback = function(Option)
+      selectedStage = tonumber(Option[1])
+      Notify("Etapa", "Cambiada a Etapa " .. selectedStage)
+   end,
+})
+
+-------------------------------------------------
+-- FUNCIÓN PARA HACER CLICK
+-------------------------------------------------
+local function ClickButton(text)
+   local playerGui = game.Players.LocalPlayer:FindFirstChild("PlayerGui")
+   if not playerGui then return false end
+
    for _, v in pairs(playerGui:GetDescendants()) do
-      if v:IsA("TextButton") or v:IsA("ImageButton") then
-         local txt = ""
+      if (v:IsA("TextButton") or v:IsA("ImageButton")) and v.Visible then
+         local buttonText = ""
+
          if v:IsA("TextButton") then
-            txt = v.Text
-         elseif v:FindFirstChild("TextLabel") then
-            txt = v.TextLabel.Text
-         elseif v:FindFirstChildWhichIsA("TextLabel") then
-            txt = v:FindFirstChildWhichIsA("TextLabel").Text
+            buttonText = v.Text or ""
          end
-         
-         if txt and string.find(string.lower(txt), string.lower(text)) then
+
+         local label = v:FindFirstChildWhichIsA("TextLabel")
+         if label then
+            buttonText = label.Text or buttonText
+         end
+
+         if buttonText ~= "" and string.find(string.lower(buttonText), string.lower(text)) then
             pcall(function()
                if firesignal then
                   firesignal(v.MouseButton1Click)
+                  firesignal(v.Activated)
                end
                if getconnections then
                   for _, conn in pairs(getconnections(v.MouseButton1Click)) do
-                     conn:Fire()
+                     pcall(function() conn:Fire() end)
                   end
                end
                v:Activate()
@@ -83,64 +122,59 @@ local function ClickGUI(text)
    return false
 end
 
--- Teleport completo (Teletransporte → Etapa X)
-local function DoTeleport(stage)
-   -- 1. Abrir menú Teletransporte
-   ClickGUI("Teletransporte")
-   task.wait(0.7)
-   
-   -- 2. Click en la etapa
-   local stageName = "Etapa " .. stage
-   ClickGUI(stageName)
-   
-   -- Por si no encuentra "Etapa 13", intenta solo el número
+-------------------------------------------------
+-- TELEPORT
+-------------------------------------------------
+local function TeleportToStage(stage)
+   ClickButton("Teletransporte")
+   task.wait(0.65)
+   ClickButton("Etapa " .. stage)
    task.wait(0.15)
-   ClickGUI(tostring(stage))
-   
-   task.wait(1.4) -- Esperar a que teletransporte
+   ClickButton(tostring(stage))
+   task.wait(1.3)
 end
 
--- Correr la etapa completa
-local function RunFullStage()
+-------------------------------------------------
+-- CORRER LA ETAPA
+-------------------------------------------------
+local function RunStage()
    local player = game.Players.LocalPlayer
    local char = player.Character
    if not char then return end
-   
+
    local hrp = char:FindFirstChild("HumanoidRootPart")
-   local humanoid = char:FindFirstChild("Humanoid")
+   local humanoid = char:FindFirstChildOfClass("Humanoid")
    if not hrp or not humanoid then return end
-   
-   humanoid.WalkSpeed = 300
-   
-   local start = tick()
-   while autofarm and (tick() - start) < 18 do
-      if not char or not char.Parent or not hrp.Parent then break end
-      
+
+   humanoid.WalkSpeed = currentSpeed
+
+   local startTime = tick()
+   while autofarm and (tick() - startTime) < 17 do
+      if not char or not char.Parent or not hrp or not hrp.Parent then
+         break
+      end
+
       local look = hrp.CFrame.LookVector
-      humanoid:Move(Vector3.new(look.X, 0, look.Z), false)
-      
-      -- Impulso fuerte para no quedarse atascado
-      hrp.AssemblyLinearVelocity = Vector3.new(look.X * 110, hrp.AssemblyLinearVelocity.Y, look.Z * 110)
-      
+      local moveDir = Vector3.new(look.X, 0, look.Z).Unit
+
+      humanoid:Move(moveDir, false)
+      hrp.AssemblyLinearVelocity = Vector3.new(moveDir.X * (currentSpeed * 0.38), hrp.AssemblyLinearVelocity.Y, moveDir.Z * (currentSpeed * 0.38))
+
       task.wait(0.03)
    end
 end
 
--- Bucle principal
+-------------------------------------------------
+-- BUCLE PRINCIPAL
+-------------------------------------------------
 task.spawn(function()
    while true do
       if autofarm then
          local char = game.Players.LocalPlayer.Character
          if char and char:FindFirstChild("HumanoidRootPart") then
-            
-            -- Paso 1 y 2: Abrir Teletransporte + click Etapa 13
-            DoTeleport(selectedStage)
-            
-            -- Paso 3: Correr toda la ruta (roja + BBNOS + CORRE!)
-            RunFullStage()
-            
-            -- Paso 4: Esperar a que cobren el cash y vuelvan al hub
-            task.wait(3)
+            TeleportToStage(selectedStage)
+            RunStage()
+            task.wait(2.8)
          else
             task.wait(1)
          end
@@ -150,17 +184,20 @@ task.spawn(function()
    end
 end)
 
--- Anti AFK
+-------------------------------------------------
+-- ANTI AFK
+-------------------------------------------------
 task.spawn(function()
+   local VirtualUser = game:GetService("VirtualUser")
    while true do
       if autofarm then
          pcall(function()
-            game:GetService("VirtualUser"):CaptureController()
-            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
          end)
       end
-      task.wait(45)
+      task.wait(40)
    end
 end)
 
-Notify("Listo", "Activa el toggle. Hará: Teletransporte → Etapa 13 → Correr ruta → Cobrar → Repetir")
+Notify("Listo", "Slider de velocidad hasta 300 agregado")
