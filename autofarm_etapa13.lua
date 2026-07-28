@@ -1,12 +1,12 @@
--- +1 Speed Keyboard Escape - Autofarm bbno$ (Etapa 13) MEJORADO
--- Rayfield UI
+-- +1 Speed Keyboard Escape - Autofarm bbno$ Etapa 13 (Versión Final)
+-- Hace exactamente la secuencia del video
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Keyboard Escape | Autofarm",
+   Name = "Keyboard Escape Autofarm",
    LoadingTitle = "Cargando...",
-   LoadingSubtitle = "bbno$ Etapa 13",
+   LoadingSubtitle = "Etapa 13 bbno$",
    ConfigurationSaving = { Enabled = false },
    Discord = { Enabled = false },
    KeySystem = false,
@@ -21,18 +21,18 @@ local function Notify(title, content)
    Rayfield:Notify({
       Title = title,
       Content = content,
-      Duration = 3,
+      Duration = 2.5,
    })
 end
 
 Tab:CreateToggle({
-   Name = "Autofarm (Etapa 13)",
+   Name = "Autofarm Etapa 13",
    CurrentValue = false,
    Flag = "AutoFarm",
    Callback = function(Value)
       autofarm = Value
       if Value then
-         Notify("Autofarm", "Activado - Farmando Etapa "..selectedStage)
+         Notify("Autofarm", "Activado - Haciendo la ruta completa")
       else
          Notify("Autofarm", "Desactivado")
       end
@@ -40,47 +40,41 @@ Tab:CreateToggle({
 })
 
 Tab:CreateDropdown({
-   Name = "Seleccionar Etapa",
-   Options = {"11", "12", "13", "14"},
+   Name = "Etapa",
+   Options = {"12", "13", "14"},
    CurrentOption = {"13"},
-   Flag = "StageSelect",
    Callback = function(Option)
       selectedStage = tonumber(Option[1])
-      Notify("Etapa", "Ahora farmando Etapa "..selectedStage)
+      Notify("Etapa", "Seleccionada: " .. selectedStage)
    end,
 })
 
--- Función para encontrar y hacer click en un botón por texto
-local function ClickButtonByText(text)
-   local player = game.Players.LocalPlayer
-   local playerGui = player:WaitForChild("PlayerGui")
+-- Función para hacer click seguro en botones
+local function ClickGUI(text)
+   local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
    
-   for _, gui in pairs(playerGui:GetDescendants()) do
-      if gui:IsA("TextButton") or gui:IsA("ImageButton") or gui:IsA("TextLabel") then
-         local buttonText = ""
-         
-         if gui:IsA("TextButton") or gui:IsA("TextLabel") then
-            buttonText = gui.Text
-         elseif gui:FindFirstChild("TextLabel") then
-            buttonText = gui.TextLabel.Text
-         elseif gui:FindFirstChildWhichIsA("TextLabel") then
-            buttonText = gui:FindFirstChildWhichIsA("TextLabel").Text
+   for _, v in pairs(playerGui:GetDescendants()) do
+      if v:IsA("TextButton") or v:IsA("ImageButton") then
+         local txt = ""
+         if v:IsA("TextButton") then
+            txt = v.Text
+         elseif v:FindFirstChild("TextLabel") then
+            txt = v.TextLabel.Text
+         elseif v:FindFirstChildWhichIsA("TextLabel") then
+            txt = v:FindFirstChildWhichIsA("TextLabel").Text
          end
          
-         if buttonText and string.find(string.lower(buttonText), string.lower(text)) then
-            -- Intentar varias formas de click
+         if txt and string.find(string.lower(txt), string.lower(text)) then
             pcall(function()
                if firesignal then
-                  firesignal(gui.MouseButton1Click)
+                  firesignal(v.MouseButton1Click)
                end
-            end)
-            pcall(function()
-               if gui.Activated then
-                  gui.Activated:Fire()
+               if getconnections then
+                  for _, conn in pairs(getconnections(v.MouseButton1Click)) do
+                     conn:Fire()
+                  end
                end
-            end)
-            pcall(function()
-               gui:Activate()
+               v:Activate()
             end)
             return true
          end
@@ -89,31 +83,25 @@ local function ClickButtonByText(text)
    return false
 end
 
--- Función principal de teleport
-local function TeleportToStage(stage)
-   -- 1. Click en el botón Teletransporte (izquierda)
-   local clicked = ClickButtonByText("Teletransporte")
-   if not clicked then
-      ClickButtonByText("Teleport")
-   end
+-- Teleport completo (Teletransporte → Etapa X)
+local function DoTeleport(stage)
+   -- 1. Abrir menú Teletransporte
+   ClickGUI("Teletransporte")
+   task.wait(0.7)
    
-   task.wait(0.6) -- Esperar a que se abra el menú
+   -- 2. Click en la etapa
+   local stageName = "Etapa " .. stage
+   ClickGUI(stageName)
    
-   -- 2. Click en la etapa específica
-   local stageText = "Etapa " .. stage
-   local success = ClickButtonByText(stageText)
+   -- Por si no encuentra "Etapa 13", intenta solo el número
+   task.wait(0.15)
+   ClickGUI(tostring(stage))
    
-   if not success then
-      -- Intentar otras variantes
-      ClickButtonByText("Stage " .. stage)
-      ClickButtonByText(tostring(stage))
-   end
-   
-   task.wait(1.2) -- Esperar a que teletransporte
+   task.wait(1.4) -- Esperar a que teletransporte
 end
 
--- Función para correr la etapa
-local function RunStage()
+-- Correr la etapa completa
+local function RunFullStage()
    local player = game.Players.LocalPlayer
    local char = player.Character
    if not char then return end
@@ -124,18 +112,17 @@ local function RunStage()
    
    humanoid.WalkSpeed = 300
    
-   local startTime = tick()
-   while autofarm and (tick() - startTime) < 22 do
-      if not char or not char.Parent or not hrp or not hrp.Parent then break end
+   local start = tick()
+   while autofarm and (tick() - start) < 18 do
+      if not char or not char.Parent or not hrp.Parent then break end
       
-      -- Mover hacia adelante
       local look = hrp.CFrame.LookVector
       humanoid:Move(Vector3.new(look.X, 0, look.Z), false)
       
-      -- Impulso extra
-      hrp.AssemblyLinearVelocity = Vector3.new(look.X * 90, hrp.AssemblyLinearVelocity.Y, look.Z * 90)
+      -- Impulso fuerte para no quedarse atascado
+      hrp.AssemblyLinearVelocity = Vector3.new(look.X * 110, hrp.AssemblyLinearVelocity.Y, look.Z * 110)
       
-      task.wait(0.04)
+      task.wait(0.03)
    end
 end
 
@@ -143,23 +130,22 @@ end
 task.spawn(function()
    while true do
       if autofarm then
-         local player = game.Players.LocalPlayer
-         local char = player.Character
-         
+         local char = game.Players.LocalPlayer.Character
          if char and char:FindFirstChild("HumanoidRootPart") then
-            -- 1. Abrir Teletransporte y seleccionar etapa
-            TeleportToStage(selectedStage)
             
-            -- 2. Correr la ruta
-            RunStage()
+            -- Paso 1 y 2: Abrir Teletransporte + click Etapa 13
+            DoTeleport(selectedStage)
             
-            -- 3. Esperar a que termine y vuelva al hub
-            task.wait(2.5)
+            -- Paso 3: Correr toda la ruta (roja + BBNOS + CORRE!)
+            RunFullStage()
+            
+            -- Paso 4: Esperar a que cobren el cash y vuelvan al hub
+            task.wait(3)
          else
             task.wait(1)
          end
       else
-         task.wait(0.3)
+         task.wait(0.25)
       end
    end
 end)
@@ -169,13 +155,12 @@ task.spawn(function()
    while true do
       if autofarm then
          pcall(function()
-            local vu = game:GetService("VirtualUser")
-            vu:CaptureController()
-            vu:ClickButton2(Vector2.new())
+            game:GetService("VirtualUser"):CaptureController()
+            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
          end)
       end
-      task.wait(50)
+      task.wait(45)
    end
 end)
 
-Notify("Script listo", "Activa el Autofarm. Va a hacer click en Teletransporte → Etapa 13 automáticamente")
+Notify("Listo", "Activa el toggle. Hará: Teletransporte → Etapa 13 → Correr ruta → Cobrar → Repetir")
