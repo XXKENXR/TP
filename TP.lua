@@ -1,7 +1,7 @@
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
 local Window = WindUI:CreateWindow({
-    Title = "My Hub",
+    Title = "Kenscript",
     Icon = "star",
     Theme = "Dark",
     Folder = "MyHub",
