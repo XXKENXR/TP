@@ -13,7 +13,7 @@ local Tab = Window:Tab({
 })
 
 Tab:Toggle({
-    Title = "Enable Feature",
+    Title = "Farm",
     Value = false,
     Callback = function(state)
         print("Feature enabled:", state)
