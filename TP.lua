@@ -23,7 +23,7 @@ Tab:Toggle({
             local char = player.Character or player.CharacterAdded:Wait()
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if hrp then
-                hrp.CFrame = CFrame.new(72, 5, -8)
+                hrp.CFrame = CFrame.new(1, 61, -9030)
             end
         end
     end,
