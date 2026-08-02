@@ -8,24 +8,33 @@ local Window = WindUI:CreateWindow({
 })
 
 local Tab = Window:Tab({
-    Title = "Main",
+    Title = "Autofarm",
     Icon = "home",
 })
 
 Tab:Toggle({
-    Title = "Farm",
+    Title = "Autofarm",
     Value = false,
     Callback = function(state)
-        print("Feature enabled:", state)
+        -- Teleport al hacer click en el toggle (cuando se activa)
+        print("Autofarm enabled:", state)
+        if state then
+            local player = game.Players.LocalPlayer
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(72, 5, -8)
+            end
+        end
     end,
 })
 
 Tab:Space()
 
 Tab:Button({
-    Title = "Run Action",
+    Title = "Run Autofarm",
     Icon = "play",
     Callback = function()
-        print("Button clicked")
+        print("Run Autofarm clicked")
     end,
 })
