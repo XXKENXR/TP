@@ -34,8 +34,25 @@ Tab:Space()
 -- Run Autofarm toggle: teleports to coords and, when player returns to lobby, teleports again repeatedly
 local runAutofarm = false
 local targetCFrame = CFrame.new(-9460, 389, -253)
-local lobbyPosition = Vector3.new(0, 61, -9028) -- posición estimada del hub/lobby (ajusta si hace falta)
-local lobbyThreshold = 20 -- distancia en studs para considerar que está en el lobby
+
+-- Detectar y guardar la posición del lobby automáticamente (se ejecuta la primera vez que el character está listo)
+local lobbyPosition -- nil hasta que lo detectemos
+local lobbyThreshold = 50 -- distancia en studs (ajusta si quieres más/menos)
+
+local function setLobbyPositionIfNil()
+    if lobbyPosition then return end
+    local player = game.Players.LocalPlayer
+    if not player then return end
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
+    if hrp then
+        lobbyPosition = Vector3.new(hrp.Position.X, hrp.Position.Y, hrp.Position.Z)
+        print("Lobby position autoguardada en:", lobbyPosition)
+    end
+end
+
+-- Intentar detectar la posición del lobby ahora (si el character ya está listo)
+pcall(setLobbyPositionIfNil)
 
 local function teleportToTarget()
     local player = game.Players.LocalPlayer
@@ -51,13 +68,26 @@ local function teleportToTarget()
 end
 
 local function isInLobby()
+    if not lobbyPosition then
+        -- si aún no tenemos lobbyPosition, intentar guardarla ahora
+        pcall(setLobbyPositionIfNil)
+        if not lobbyPosition then return false end
+    end
+
     local player = game.Players.LocalPlayer
+    if not player then return false end
     local char = player.Character
     if not char then return false end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return false end
+
     local pos = hrp.Position
-    return (pos - lobbyPosition).Magnitude <= lobbyThreshold
+    -- comparar solo XZ para evitar diferencia de Y
+    local dxz = Vector3.new(pos.X, 0, pos.Z) - Vector3.new(lobbyPosition.X, 0, lobbyPosition.Z)
+    local dist = dxz.Magnitude
+    -- debug
+    -- print(("Distancia al lobby (XZ): %.2f / umbral %d"):format(dist, lobbyThreshold))
+    return dist <= lobbyThreshold
 end
 
 Tab:Toggle({
