@@ -23,7 +23,7 @@ Tab:Toggle({
             local char = player.Character or player.CharacterAdded:Wait()
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if hrp then
-                hrp.CFrame = CFrame.new(1132, 669, -3230)
+                hrp.CFrame = CFrame.new(-9460, 389, -253)
             end
         end
     end,
@@ -33,7 +33,7 @@ Tab:Space()
 
 -- Run Autofarm toggle: teleports to coords and, when player returns to lobby, teleports again repeatedly
 local runAutofarm = false
-local targetCFrame = CFrame.new(1, 61, -9030)
+local targetCFrame = CFrame.new(-9460, 389, -253)
 local lobbyPosition = Vector3.new(0, 61, -9028) -- posición estimada del hub/lobby (ajusta si hace falta)
 local lobbyThreshold = 20 -- distancia en studs para considerar que está en el lobby
 
