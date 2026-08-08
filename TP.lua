@@ -102,8 +102,9 @@ local targetCFrame = CFrame.new(-9460, 389, -253) -- kept for compatibility but 
 local lobbyPosition = nil -- will be auto-detected on first run
 local lobbyThreshold = 60
 
--- Speed cap
+-- Speed cap and user speed control
 local SPEED_CAP = 300 -- máxima velocidad permitida
+local desiredSpeed = 300 -- user-configurable speed (1..300)
 local originalWalkSpeed = nil
 local humanoidRef = nil
 
@@ -170,11 +171,33 @@ end
 
 local function enforceSpeedCap()
     if humanoidRef and humanoidRef.Parent then
-        if humanoidRef.WalkSpeed > SPEED_CAP then
-            humanoidRef.WalkSpeed = SPEED_CAP
+        -- clamp desiredSpeed to [1, SPEED_CAP]
+        local want = math.max(1, math.min(SPEED_CAP, math.floor(desiredSpeed)))
+        if humanoidRef.WalkSpeed ~= want then
+            humanoidRef.WalkSpeed = want
         end
     end
 end
+
+-- UI: Speed slider (1..300)
+Tab:Slider({
+    Title = "Speed",
+    Min = 1,
+    Max = 300,
+    Value = desiredSpeed,
+    Format = function(v) return tostring(math.floor(v)) end,
+    Callback = function(v)
+        desiredSpeed = math.max(1, math.min(300, math.floor(v)))
+        -- apply immediately if running and humanoid known
+        if runAutofarm and humanoidRef then
+            pcall(function()
+                humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed))
+            end)
+        end
+    end,
+})
+
+Tab:Space()
 
 Tab:Toggle({
     Title = "Autofarm",
@@ -193,8 +216,8 @@ Tab:Toggle({
                 humanoidRef = char:FindFirstChildOfClass("Humanoid")
                 if humanoidRef then
                     originalWalkSpeed = humanoidRef.WalkSpeed
-                    -- set to SPEED_CAP (no más de 300)
-                    humanoidRef.WalkSpeed = math.min(SPEED_CAP, 300)
+                    -- set to desiredSpeed (clamped by SPEED_CAP)
+                    humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed))
                 end
             end
 
