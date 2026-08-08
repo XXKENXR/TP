@@ -48,6 +48,7 @@ local obstacleRemovalEnabled = false
 local speedControlEnabled = false
 local desiredSpeed = 100 -- default
 local SPEED_CAP = 300
+local godModeEnabled = false
 
 -- Lobby detection
 local lobbyPosition = nil
@@ -55,7 +56,9 @@ local lobbyThreshold = 60
 
 local humanoidRef = nil
 local originalWalkSpeed = nil
+local originalMaxHealth = nil
 local enforcerRunning = false
+local godEnforcerRunning = false
 
 -- Utility: detect local player and character HRP/humanoid
 local Players = game:GetService("Players")
@@ -64,6 +67,19 @@ local localPlayer = Players.LocalPlayer
 local function getCharacter()
     if not localPlayer then return nil end
     return localPlayer.Character
+end
+
+local function updateHumanoidRefs()
+    local char = getCharacter()
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    humanoidRef = hum or humanoidRef
+    if humanoidRef and not originalWalkSpeed then
+        originalWalkSpeed = humanoidRef.WalkSpeed
+    end
+    if humanoidRef and not originalMaxHealth then
+        originalMaxHealth = humanoidRef.MaxHealth
+    end
 end
 
 local function setLobbyIfNil()
@@ -114,6 +130,16 @@ local function enforceSpeed()
     end
 end
 
+-- God mode enforcer: keeps health at MaxHealth and optionally increases MaxHealth
+local function enforceGodMode()
+    if not humanoidRef or not humanoidRef.Parent or not godModeEnabled then return end
+    -- set MaxHealth high and restore Health
+    pcall(function()
+        humanoidRef.MaxHealth = math.max(100000, humanoidRef.MaxHealth)
+        humanoidRef.Health = humanoidRef.MaxHealth
+    end)
+end
+
 -- Obstacle removal (heuristic)
 local hazardNames = {"lava","kill","spike","trap","acid","death","hazard","damage"}
 local lastTouchedPart = nil
@@ -153,8 +179,18 @@ local function attachObstacleSensors(char)
 end
 
 if localPlayer then
-    if localPlayer.Character then attachObstacleSensors(localPlayer.Character) end
-    charAddedConn = localPlayer.CharacterAdded:Connect(attachObstacleSensors)
+    if localPlayer.Character then attachObstacleSensors(localPlayer.Character); updateHumanoidRefs() end
+    charAddedConn = localPlayer.CharacterAdded:Connect(function(c)
+        attachObstacleSensors(c)
+        -- small delay to let humanoid appear
+        task.spawn(function()
+            task.wait(0.05)
+            updateHumanoidRefs()
+            -- reapply settings if toggles are active
+            if speedControlEnabled and humanoidRef then pcall(function() humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed)) end) end
+            if godModeEnabled and humanoidRef then pcall(function() humanoidRef.MaxHealth = math.max(100000, humanoidRef.MaxHealth); humanoidRef.Health = humanoidRef.MaxHealth end) end
+        end)
+    end)
 end
 
 local scannerThread
@@ -181,7 +217,7 @@ local function stopScanner()
     if diedConn then pcall(function() diedConn:Disconnect() end); diedConn = nil end
 end
 
--- UI: ensure order and visibility: three toggles (Autofarm, Eliminar Obstaculos, Speed Control) + slider (applies when speed toggle enabled)
+-- UI: ensure order and visibility: three toggles (Autofarm, Eliminar Obstaculos, Speed Control) + slider (applies when speed toggle enabled) + God Mode
 
 -- Autofarm toggle
 Tab:Toggle({
@@ -193,8 +229,7 @@ Tab:Toggle({
         if runAutofarm then
             setLobbyIfNil()
             -- get humanoid
-            local char = getCharacter() or (localPlayer and localPlayer.CharacterAdded:Wait())
-            if char then humanoidRef = char:FindFirstChildOfClass("Humanoid") end
+            updateHumanoidRefs()
             if humanoidRef and not originalWalkSpeed then originalWalkSpeed = humanoidRef.WalkSpeed end
             if humanoidRef and speedControlEnabled then humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed)) end
 
@@ -203,6 +238,14 @@ Tab:Toggle({
                 task.spawn(function()
                     while runAutofarm do enforceSpeed(); task.wait(0.15) end
                     enforcerRunning = false
+                end)
+            end
+
+            if godModeEnabled and not godEnforcerRunning then
+                godEnforcerRunning = true
+                task.spawn(function()
+                    while runAutofarm and godModeEnabled do enforceGodMode(); task.wait(0.25) end
+                    godEnforcerRunning = false
                 end)
             end
 
@@ -220,10 +263,12 @@ Tab:Toggle({
                     if isInLobby() then print("Lobby detectado, reiniciando ruta") task.wait(0.15) else warn("Timeout sin lobby, reiniciando") end
                 end
                 if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
+                if humanoidRef and originalMaxHealth then pcall(function() humanoidRef.MaxHealth = originalMaxHealth; humanoidRef.Health = originalMaxHealth end) end
                 print("Autofarm detenido")
             end)
         else
             if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
+            if humanoidRef and originalMaxHealth then pcall(function() humanoidRef.MaxHealth = originalMaxHealth; humanoidRef.Health = originalMaxHealth end) end
         end
     end,
 })
@@ -250,13 +295,11 @@ Tab:Toggle({
     Callback = function(state)
         speedControlEnabled = state
         print("Speed Control:", state)
+        updateHumanoidRefs()
         if speedControlEnabled then
-            -- ensure humanoidRef updated
-            local char = getCharacter() or (localPlayer and localPlayer.CharacterAdded:Wait())
-            if char then humanoidRef = char:FindFirstChildOfClass("Humanoid") end
             if humanoidRef then
                 if not originalWalkSpeed then originalWalkSpeed = humanoidRef.WalkSpeed end
-                humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed))
+                pcall(function() humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed)) end)
             end
             if not enforcerRunning then
                 enforcerRunning = true
@@ -281,7 +324,37 @@ Tab:Slider({
     Callback = function(v)
         desiredSpeed = math.max(1, math.min(300, math.floor(v)))
         print("Desired speed set to:", desiredSpeed)
-        if speedControlEnabled and humanoidRef then pcall(function() humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed)) end) end
+        if speedControlEnabled then
+            updateHumanoidRefs()
+            if humanoidRef then pcall(function() humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed)) end) end
+        end
+    end,
+})
+
+-- God Mode toggle
+Tab:Toggle({
+    Title = "God Mode",
+    Value = godModeEnabled,
+    Callback = function(state)
+        godModeEnabled = state
+        print("God Mode:", state)
+        updateHumanoidRefs()
+        if godModeEnabled then
+            if humanoidRef then
+                if not originalMaxHealth then originalMaxHealth = humanoidRef.MaxHealth end
+                pcall(function() humanoidRef.MaxHealth = math.max(100000, humanoidRef.MaxHealth); humanoidRef.Health = humanoidRef.MaxHealth end)
+            end
+            if not godEnforcerRunning then
+                godEnforcerRunning = true
+                task.spawn(function()
+                    while godModeEnabled do enforceGodMode(); task.wait(0.25) end
+                    godEnforcerRunning = false
+                end)
+            end
+        else
+            if humanoidRef and originalMaxHealth then pcall(function() humanoidRef.MaxHealth = originalMaxHealth; humanoidRef.Health = originalMaxHealth end) end
+            godEnforcerRunning = false
+        end
     end,
 })
 
