@@ -137,19 +137,35 @@ local function isInLobby()
     return dxz.Magnitude <= lobbyThreshold
 end
 
+-- More aggressive teleport: multiple quick attempts + reset velocities to help the client "stick" to the point
 local function teleportTo(pos)
     local player = game.Players.LocalPlayer
     if not player then return false end
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
     if not hrp then return false end
-    local ok, err = pcall(function()
-        hrp.CFrame = CFrame.new(pos)
-    end)
-    if not ok then
-        warn("Teleport error:", err)
+
+    for i = 1, 6 do -- varios intentos rápidos
+        pcall(function()
+            -- intentar detener inercia si la hay
+            pcall(function()
+                hrp.Velocity = Vector3.new(0,0,0)
+            end)
+            pcall(function()
+                -- AssemblyLinearVelocity puede no existir en algunos entornos, por eso pcall
+                hrp.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            end)
+            hrp.CFrame = CFrame.new(pos)
+        end)
+        task.wait(0.03)
+        if (hrp.Position - pos).Magnitude <= 2 then
+            return true
+        end
     end
-    return ok
+
+    -- intento final
+    pcall(function() hrp.CFrame = CFrame.new(pos) end)
+    return (hrp.Position - pos).Magnitude <= 5
 end
 
 local function enforceSpeedCap()
