@@ -12,7 +12,7 @@ local Tab = Window:Tab({
     Icon = "home",
 })
 
--- Simple Autofarm toggle (mantengo por compatibilidad)
+-- Simple Autofarm toggle
 Tab:Toggle({
     Title = "Autofarm",
     Value = false,
@@ -29,127 +29,7 @@ Tab:Toggle({
     end,
 })
 
--- Farm World 2 toggle
-Tab:Toggle({
-    Title = "Farm World 2",
-    Value = false,
-    Callback = function(state)
-        print("Farm World 2 toggled:", state)
-        if state then
-            local player = game.Players.LocalPlayer
-            local char = player.Character or player.CharacterAdded:Wait()
-            local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
-            if hrp then
-                pcall(function()
-                    hrp.CFrame = CFrame.new(-3604, 154, -9383)
-                end)
-            end
-        end
-    end,
-})
-
 Tab:Space()
-
--- Run Autofarm toggle: teleports to coords and, when player returns to lobby, teleports again repeatedly
-local runAutofarm = false
-local targetCFrame = CFrame.new(-9460, 389, -253)
-
--- Detectar y guardar la posición del lobby automáticamente (se ejecuta la primera vez que el character está listo)
-local lobbyPosition -- nil hasta que lo detectemos
-local lobbyThreshold = 50 -- distancia en studs (ajusta si quieres más/menos)
-
-local function setLobbyPositionIfNil()
-    if lobbyPosition then return end
-    local player = game.Players.LocalPlayer
-    if not player then return end
-    local char = player.Character or player.CharacterAdded:Wait()
-    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
-    if hrp then
-        lobbyPosition = Vector3.new(hrp.Position.X, hrp.Position.Y, hrp.Position.Z)
-        print("Lobby position autoguardada en:", lobbyPosition)
-    end
-end
-
--- Intentar detectar la posición del lobby ahora (si el character ya está listo)
-pcall(setLobbyPositionIfNil)
-
-local function teleportToTarget()
-    local player = game.Players.LocalPlayer
-    local char = player.Character or player.CharacterAdded:Wait()
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        pcall(function()
-            hrp.CFrame = targetCFrame
-        end)
-        return true
-    end
-    return false
-end
-
-local function isInLobby()
-    if not lobbyPosition then
-        -- si aún no tenemos lobbyPosition, intentar guardarla ahora
-        pcall(setLobbyPositionIfNil)
-        if not lobbyPosition then return false end
-    end
-
-    local player = game.Players.LocalPlayer
-    if not player then return false end
-    local char = player.Character
-    if not char then return false end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return false end
-
-    local pos = hrp.Position
-    -- comparar solo XZ para evitar diferencia de Y
-    local dxz = Vector3.new(pos.X, 0, pos.Z) - Vector3.new(lobbyPosition.X, 0, lobbyPosition.Z)
-    local dist = dxz.Magnitude
-    -- debug
-    -- print(("Distancia al lobby (XZ): %.2f / umbral %d"):format(dist, lobbyThreshold))
-    return dist <= lobbyThreshold
-end
-
-Tab:Toggle({
-    Title = "Run Autofarm",
-    Value = false,
-    Callback = function(state)
-        runAutofarm = state
-        print("Run Autofarm toggled:", state)
-        if runAutofarm then
-            -- start loop in background
-            task.spawn(function()
-                while runAutofarm do
-                    -- Teleport to target start
-                    local ok = teleportToTarget()
-                    if not ok then
-                        task.wait(1)
-                        continue
-                    end
-
-                    -- Wait until player returns to lobby (or until toggle is turned off)
-                    local startWait = tick()
-                    local timeout = 120 -- seguridad: timeout máximo de espera en segundos
-                    while runAutofarm and not isInLobby() and (tick() - startWait) < timeout do
-                        task.wait(0.8)
-                    end
-
-                    -- Si aún no está en lobby después del timeout, reintentar teleport
-                    if runAutofarm and not isInLobby() then
-                        teleportToTarget()
-                    end
-
-                    -- pequeña pausa antes de la siguiente iteración
-                    local smallDelay = 1.5
-                    local waited = 0
-                    while runAutofarm and waited < smallDelay do
-                        task.wait(0.25)
-                        waited = waited + 0.25
-                    end
-                end
-            end)
-        end
-    end,
-})
 
 -- Keybind (K) para abrir/cerrar la UI en PC
 local UserInputService = game:GetService("UserInputService")
