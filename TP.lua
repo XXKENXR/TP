@@ -107,6 +107,8 @@ local SPEED_CAP = 300 -- máxima velocidad permitida
 local originalWalkSpeed = nil
 local humanoidRef = nil
 
+local enforcerRunning = false
+
 local function setLobbyPositionIfNil()
     if lobbyPosition then return end
     local player = game.Players.LocalPlayer
@@ -180,27 +182,26 @@ Tab:Toggle({
                 end
             end
 
+            -- start enforcer thread
+            if not enforcerRunning then
+                enforcerRunning = true
+                task.spawn(function()
+                    while runAutofarm do
+                        enforceSpeedCap()
+                        task.wait(0.15)
+                    end
+                    enforcerRunning = false
+                end)
+            end
+
             task.spawn(function()
                 while runAutofarm do
-                    -- enforce speed cap periodically
-                    enforceSpeedCap()
-
-                    -- Iterate waypoints sequentially
+                    -- Iterate waypoints sequentially WITHOUT delay
                     for i = 1, #waypoints do
                         if not runAutofarm then break end
                         currentIndex = i
                         local wp = waypoints[i]
                         teleportTo(wp)
-
-                        -- small delay to allow game to register movement
-                        local waited = 0
-                        local waitStep = 0.25
-                        local maxWait = 2
-                        while runAutofarm and waited < maxWait do
-                            task.wait(waitStep)
-                            waited = waited + waitStep
-                            enforceSpeedCap()
-                        end
                     end
 
                     if not runAutofarm then break end
@@ -210,7 +211,8 @@ Tab:Toggle({
                     local start = tick()
                     local timeout = 300 -- safety timeout in seconds
                     while runAutofarm and not isInLobby() and (tick() - start) < timeout do
-                        task.wait(1)
+                        task.wait(0.2)
+                        -- keep enforcing cap while waiting
                         enforceSpeedCap()
                     end
 
@@ -218,10 +220,8 @@ Tab:Toggle({
 
                     if isInLobby() then
                         print("Lobby detectado: reiniciando ruta...")
-                        -- small pause before restarting
-                        task.wait(1)
+                        task.wait(0.15)
                     else
-                        -- timeout reached, try teleporting to first waypoint again
                         warn("No se detectó el lobby dentro del timeout; reintentando la ruta")
                     end
                 end
