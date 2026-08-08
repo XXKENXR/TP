@@ -99,8 +99,13 @@ local currentIndex = 1
 local targetCFrame = CFrame.new(-9460, 389, -253) -- kept for compatibility but not used in waypoint loop
 
 -- Lobby detection (auto-detect if possible)
-local lobbyPosition = Vector3.new(0, 61, -9028) -- default
-local lobbyThreshold = 50
+local lobbyPosition = nil -- will be auto-detected on first run
+local lobbyThreshold = 60
+
+-- Speed cap
+local SPEED_CAP = 300 -- máxima velocidad permitida
+local originalWalkSpeed = nil
+local humanoidRef = nil
 
 local function setLobbyPositionIfNil()
     if lobbyPosition then return end
@@ -145,23 +150,48 @@ local function teleportTo(pos)
     return ok
 end
 
+local function enforceSpeedCap()
+    if humanoidRef and humanoidRef.Parent then
+        if humanoidRef.WalkSpeed > SPEED_CAP then
+            humanoidRef.WalkSpeed = SPEED_CAP
+        end
+    end
+end
+
 Tab:Toggle({
     Title = "Autofarm",
     Value = false,
     Callback = function(state)
         runAutofarm = state
         print("Autofarm enabled:", state)
+        local player = game.Players.LocalPlayer
         if runAutofarm then
-            -- If lobbyPosition is default (0,61,-9028) try to auto-detect from current character
+            -- detect lobby position if not set
             pcall(setLobbyPositionIfNil)
+
+            -- try to get humanoid and store original walkspeed
+            local char = player and (player.Character or player.CharacterAdded:Wait())
+            if char then
+                humanoidRef = char:FindFirstChildOfClass("Humanoid")
+                if humanoidRef then
+                    originalWalkSpeed = humanoidRef.WalkSpeed
+                    -- set to SPEED_CAP (no más de 300)
+                    humanoidRef.WalkSpeed = math.min(SPEED_CAP, 300)
+                end
+            end
+
             task.spawn(function()
                 while runAutofarm do
+                    -- enforce speed cap periodically
+                    enforceSpeedCap()
+
                     -- Iterate waypoints sequentially
                     for i = 1, #waypoints do
                         if not runAutofarm then break end
                         currentIndex = i
                         local wp = waypoints[i]
                         teleportTo(wp)
+
                         -- small delay to allow game to register movement
                         local waited = 0
                         local waitStep = 0.25
@@ -169,6 +199,7 @@ Tab:Toggle({
                         while runAutofarm and waited < maxWait do
                             task.wait(waitStep)
                             waited = waited + waitStep
+                            enforceSpeedCap()
                         end
                     end
 
@@ -180,6 +211,7 @@ Tab:Toggle({
                     local timeout = 300 -- safety timeout in seconds
                     while runAutofarm and not isInLobby() and (tick() - start) < timeout do
                         task.wait(1)
+                        enforceSpeedCap()
                     end
 
                     if not runAutofarm then break end
@@ -193,8 +225,23 @@ Tab:Toggle({
                         warn("No se detectó el lobby dentro del timeout; reintentando la ruta")
                     end
                 end
+
+                -- restore original walkspeed if we changed it
+                if humanoidRef and originalWalkSpeed then
+                    pcall(function()
+                        humanoidRef.WalkSpeed = originalWalkSpeed
+                    end)
+                end
+
                 print("Autofarm detenido")
             end)
+        else
+            -- stopped: restore walkspeed immediately if possible
+            if humanoidRef and originalWalkSpeed then
+                pcall(function()
+                    humanoidRef.WalkSpeed = originalWalkSpeed
+                end)
+            end
         end
     end,
 })
