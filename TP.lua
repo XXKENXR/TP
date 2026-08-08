@@ -29,6 +29,25 @@ Tab:Toggle({
     end,
 })
 
+-- Farm World 2 toggle
+Tab:Toggle({
+    Title = "Farm World 2",
+    Value = false,
+    Callback = function(state)
+        print("Farm World 2 toggled:", state)
+        if state then
+            local player = game.Players.LocalPlayer
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
+            if hrp then
+                pcall(function()
+                    hrp.CFrame = CFrame.new(-3604, 154, -9383)
+                end)
+            end
+        end
+    end,
+})
+
 Tab:Space()
 
 -- Run Autofarm toggle: teleports to coords and, when player returns to lobby, teleports again repeatedly
