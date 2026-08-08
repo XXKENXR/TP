@@ -107,6 +107,7 @@ local SPEED_CAP = 300 -- máxima velocidad permitida
 local desiredSpeed = 300 -- user-configurable speed (1..300)
 local originalWalkSpeed = nil
 local humanoidRef = nil
+local speedControlEnabled = true -- toggle to enable/disable speed control
 
 local enforcerRunning = false
 
@@ -170,7 +171,7 @@ local function teleportTo(pos)
 end
 
 local function enforceSpeedCap()
-    if humanoidRef and humanoidRef.Parent then
+    if humanoidRef and humanoidRef.Parent and speedControlEnabled then
         -- clamp desiredSpeed to [1, SPEED_CAP]
         local want = math.max(1, math.min(SPEED_CAP, math.floor(desiredSpeed)))
         if humanoidRef.WalkSpeed ~= want then
@@ -179,7 +180,123 @@ local function enforceSpeedCap()
     end
 end
 
--- UI: Speed slider (1..300)
+-- Obstacle remover state
+local obstacleRemovalEnabled = false
+local lastTouchedPart = nil
+local lastTouchedTime = 0
+local touchedConn = nil
+local diedConn = nil
+local obstacleScannerThread = nil
+
+-- Heuristic: part names that are likely to kill (lowercase)
+local hazardNames = {"lava","kill","spike","damage","trap","acid","death","hazard"}
+
+local function isLikelyHazard(part)
+    if not part or not part:IsA("BasePart") then return false end
+    local name = part.Name and string.lower(part.Name) or ""
+    for _, pat in ipairs(hazardNames) do
+        if name:find(pat) then return true end
+    end
+    -- if the part is non-collidable and transparent probably not hazard
+    -- anchored hazards are common; accept anchored parts too
+    return false
+end
+
+local function startObstacleRemoval()
+    if obstacleScannerThread then return end
+
+    local player = game.Players.LocalPlayer
+    local function onTouched(part)
+        lastTouchedPart = part
+        lastTouchedTime = tick()
+    end
+
+    local function onDied()
+        -- if we touched a part recently, try to destroy it
+        if lastTouchedPart and tick() - lastTouchedTime <= 3 then
+            local p = lastTouchedPart
+            if p and p.Parent then
+                local ok, err = pcall(function()
+                    p:Destroy()
+                end)
+                if ok then
+                    print("[Eliminar Obstaculos] Eliminado elemento tocado: ", p:GetFullName())
+                else
+                    warn("[Eliminar Obstaculos] Falló al eliminar elemento tocado:", err)
+                end
+            end
+        end
+    end
+
+    -- connect to character when it spawns
+    local function attachToCharacter(char)
+        pcall(function()
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hrp and hrp:IsA("BasePart") then
+                touchedConn = hrp.Touched:Connect(onTouched)
+            end
+            if hum then
+                diedConn = hum.Died:Connect(onDied)
+            end
+        end)
+    end
+
+    -- attach to current character
+    local char = player.Character
+    if char then attachToCharacter(char) end
+
+    -- listen for future characters
+    player.CharacterAdded:Connect(function(c)
+        -- disconnect previous connections safely
+        if touchedConn then touchedConn:Disconnect() touchedConn = nil end
+        if diedConn then diedConn:Disconnect() diedConn = nil end
+        attachToCharacter(c)
+    end)
+
+    -- scanner thread: periodically remove parts whose names match hazard patterns
+    obstacleScannerThread = task.spawn(function()
+        while obstacleRemovalEnabled do
+            -- scan workspace quickly but safely
+            for _, v in ipairs(workspace:GetDescendants()) do
+                if not obstacleRemovalEnabled then break end
+                if v:IsA("BasePart") and isLikelyHazard(v) then
+                    -- try to destroy
+                    local ok, err = pcall(function()
+                        v:Destroy()
+                    end)
+                    if ok then
+                        print("[Eliminar Obstaculos] Eliminado hazard por nombre:", v:GetFullName())
+                    end
+                end
+            end
+            -- wait a bit between scans
+            task.wait(3)
+        end
+        obstacleScannerThread = nil
+    end)
+end
+
+local function stopObstacleRemoval()
+    obstacleRemovalEnabled = false
+    -- disconnect connections
+    if touchedConn then pcall(function() touchedConn:Disconnect() end) touchedConn = nil end
+    if diedConn then pcall(function() diedConn:Disconnect() end) diedConn = nil end
+    obstacleScannerThread = nil
+end
+
+-- UI: Speed enable toggle and slider (1..300)
+Tab:Toggle({
+    Title = "Enable Speed Control",
+    Value = speedControlEnabled,
+    Callback = function(state)
+        speedControlEnabled = state
+        if not speedControlEnabled and humanoidRef and originalWalkSpeed then
+            pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end)
+        end
+    end,
+})
+
 Tab:Slider({
     Title = "Speed",
     Min = 1,
@@ -188,11 +305,28 @@ Tab:Slider({
     Format = function(v) return tostring(math.floor(v)) end,
     Callback = function(v)
         desiredSpeed = math.max(1, math.min(300, math.floor(v)))
-        -- apply immediately if running and humanoid known
-        if runAutofarm and humanoidRef then
+        -- apply immediately if running and humanoid known and speed control enabled
+        if runAutofarm and humanoidRef and speedControlEnabled then
             pcall(function()
                 humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed))
             end)
+        end
+    end,
+})
+
+Tab:Space()
+
+-- Toggle to remove obstacles
+Tab:Toggle({
+    Title = "Eliminar Obstaculos",
+    Value = false,
+    Callback = function(state)
+        obstacleRemovalEnabled = state
+        print("Eliminar Obstaculos:", state)
+        if obstacleRemovalEnabled then
+            startObstacleRemoval()
+        else
+            stopObstacleRemoval()
         end
     end,
 })
@@ -214,9 +348,10 @@ Tab:Toggle({
             local char = player and (player.Character or player.CharacterAdded:Wait())
             if char then
                 humanoidRef = char:FindFirstChildOfClass("Humanoid")
-                if humanoidRef then
+                if humanoidRef and not originalWalkSpeed then
                     originalWalkSpeed = humanoidRef.WalkSpeed
-                    -- set to desiredSpeed (clamped by SPEED_CAP)
+                end
+                if humanoidRef and speedControlEnabled then
                     humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed))
                 end
             end
@@ -266,7 +401,7 @@ Tab:Toggle({
                 end
 
                 -- restore original walkspeed if we changed it
-                if humanoidRef and originalWalkSpeed then
+                if humanoidRef and originalWalkSpeed and not speedControlEnabled then
                     pcall(function()
                         humanoidRef.WalkSpeed = originalWalkSpeed
                     end)
