@@ -59,6 +59,7 @@ local originalWalkSpeed = nil
 local originalMaxHealth = nil
 local enforcerRunning = false
 local godEnforcerRunning = false
+local velocityCleanerRunning = false
 
 -- Utility: detect local player and character HRP/humanoid
 local Players = game:GetService("Players")
@@ -121,6 +122,35 @@ local function isInLobby()
     return dxz.Magnitude <= lobbyThreshold
 end
 
+-- Velocity cleaner: remove BodyVelocity / zero AssemblyLinearVelocity periodically while enabled
+local function startVelocityCleaner()
+    if velocityCleanerRunning then return end
+    velocityCleanerRunning = true
+    task.spawn(function()
+        while velocityCleanerRunning do
+            local char = getCharacter()
+            if char then
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    -- zero velocities
+                    pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
+                    -- remove BodyVelocity children in HRP and character
+                    for _, v in ipairs(char:GetDescendants()) do
+                        if v:IsA("BodyVelocity") then
+                            pcall(function() v:Destroy() end)
+                        end
+                    end
+                end
+            end
+            task.wait(0.25)
+        end
+    end)
+end
+
+local function stopVelocityCleaner()
+    velocityCleanerRunning = false
+end
+
 -- Speed enforcement
 local function enforceSpeed()
     if not humanoidRef or not humanoidRef.Parent or not speedControlEnabled then return end
@@ -133,7 +163,6 @@ end
 -- God mode enforcer: keeps health at MaxHealth and optionally increases MaxHealth
 local function enforceGodMode()
     if not humanoidRef or not humanoidRef.Parent or not godModeEnabled then return end
-    -- set MaxHealth high and restore Health
     pcall(function()
         humanoidRef.MaxHealth = math.max(100000, humanoidRef.MaxHealth)
         humanoidRef.Health = humanoidRef.MaxHealth
@@ -217,10 +246,23 @@ local function stopScanner()
     if diedConn then pcall(function() diedConn:Disconnect() end); diedConn = nil end
 end
 
--- UI: ensure order and visibility: three toggles (Autofarm, Eliminar Obstaculos, Speed Control) + slider (applies when speed toggle enabled) + God Mode
+-- UI: ensure order and visibility: three toggles (Autofarm, Eliminar Obstaculos, Speed Control) + slider (applies when speed toggle enabled) + God Mode + status label/buttons
+
+-- Helper to safely create UI elements (pcall to avoid breaking if control missing)
+local function safeCreate(fn, args)
+    local ok, res = pcall(function() return fn(args) end)
+    if not ok then
+        warn("WindUI element failed:", res)
+    end
+    return res
+end
+
+-- Status label (attempt to create; if not available, fall back to prints)
+local statusLabel = nil
+safeCreate(Tab.Label or function() end, {Title = "Status: initializing..."})
 
 -- Autofarm toggle
-Tab:Toggle({
+safeCreate(Tab.Toggle, {
     Title = "Autofarm",
     Value = runAutofarm,
     Callback = function(state)
@@ -232,6 +274,9 @@ Tab:Toggle({
             updateHumanoidRefs()
             if humanoidRef and not originalWalkSpeed then originalWalkSpeed = humanoidRef.WalkSpeed end
             if humanoidRef and speedControlEnabled then humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, desiredSpeed)) end
+
+            -- start velocity cleaner
+            startVelocityCleaner()
 
             if not enforcerRunning then
                 enforcerRunning = true
@@ -264,17 +309,19 @@ Tab:Toggle({
                 end
                 if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
                 if humanoidRef and originalMaxHealth then pcall(function() humanoidRef.MaxHealth = originalMaxHealth; humanoidRef.Health = originalMaxHealth end) end
+                stopVelocityCleaner()
                 print("Autofarm detenido")
             end)
         else
             if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
             if humanoidRef and originalMaxHealth then pcall(function() humanoidRef.MaxHealth = originalMaxHealth; humanoidRef.Health = originalMaxHealth end) end
+            stopVelocityCleaner()
         end
     end,
 })
 
 -- Eliminar Obstaculos toggle
-Tab:Toggle({
+safeCreate(Tab.Toggle, {
     Title = "Eliminar Obstaculos",
     Value = obstacleRemovalEnabled,
     Callback = function(state)
@@ -289,7 +336,7 @@ Tab:Toggle({
 })
 
 -- Speed control toggle
-Tab:Toggle({
+safeCreate(Tab.Toggle, {
     Title = "Speed Control",
     Value = speedControlEnabled,
     Callback = function(state)
@@ -308,14 +355,17 @@ Tab:Toggle({
                     enforcerRunning = false
                 end)
             end
+            -- velocity cleaner for better effect
+            startVelocityCleaner()
         else
             if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
+            stopVelocityCleaner()
         end
     end,
 })
 
--- Speed slider (applies only when Speed Control is enabled)
-Tab:Slider({
+-- Speed slider (applies only when Speed Control is enabled) - keep but safe
+safeCreate(Tab.Slider, {
     Title = "Speed",
     Min = 1,
     Max = 300,
@@ -331,8 +381,52 @@ Tab:Slider({
     end,
 })
 
+-- Buttons + / - for compatibility / fine control
+safeCreate(Tab.Button, {
+    Title = "+ Speed",
+    Callback = function()
+        desiredSpeed = math.min(300, desiredSpeed + 5)
+        print("Desired speed set to:", desiredSpeed)
+        if speedControlEnabled and humanoidRef then pcall(function() humanoidRef.WalkSpeed = desiredSpeed end) end
+    end,
+})
+safeCreate(Tab.Button, {
+    Title = "- Speed",
+    Callback = function()
+        desiredSpeed = math.max(1, desiredSpeed - 5)
+        print("Desired speed set to:", desiredSpeed)
+        if speedControlEnabled and humanoidRef then pcall(function() humanoidRef.WalkSpeed = desiredSpeed end) end
+    end,
+})
+
+-- Status display (label if available) - update loop
+local function updateStatusLabel()
+    local labelText = ""
+    local char = getCharacter()
+    if char and humanoidRef then
+        labelText = string.format("WS=%.0f / MaxH=%.0f / God=%s", humanoidRef.WalkSpeed or 0, humanoidRef.MaxHealth or 0, tostring(godModeEnabled))
+    else
+        labelText = "No character"
+    end
+    -- try to set via Label or just print
+    local ok, _ = pcall(function()
+        if Tab and Tab.SetLabel then
+            Tab:SetLabel(labelText)
+        else
+            -- fallback: create a label (one-time) and update its Title if supported
+            if statusLabel and statusLabel.SetText then
+                statusLabel:SetText(labelText)
+            end
+        end
+    end)
+    if not ok then
+        -- print as fallback
+        -- print("Status: ", labelText)
+    end
+end
+
 -- God Mode toggle
-Tab:Toggle({
+safeCreate(Tab.Toggle, {
     Title = "God Mode",
     Value = godModeEnabled,
     Callback = function(state)
@@ -347,18 +441,29 @@ Tab:Toggle({
             if not godEnforcerRunning then
                 godEnforcerRunning = true
                 task.spawn(function()
-                    while godModeEnabled do enforceGodMode(); task.wait(0.25) end
+                    while godModeEnabled do enforceGodMode(); task.wait(0.15) end
                     godEnforcerRunning = false
                 end)
             end
+            -- velocity cleaner helps avoid knockback deaths
+            startVelocityCleaner()
         else
             if humanoidRef and originalMaxHealth then pcall(function() humanoidRef.MaxHealth = originalMaxHealth; humanoidRef.Health = originalMaxHealth end) end
             godEnforcerRunning = false
+            stopVelocityCleaner()
         end
     end,
 })
 
 Tab:Space()
+
+-- Periodic status updater
+task.spawn(function()
+    while true do
+        updateStatusLabel()
+        task.wait(0.5)
+    end
+end)
 
 -- Keybind K to toggle UI
 local UserInputService = game:GetService("UserInputService")
