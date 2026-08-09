@@ -1,5 +1,5 @@
--- TP.lua — Simplified: only Autofarm toggle; speed fixed to 50 while running
-print("TP.lua loaded: simplified Autofarm (speed 50)")
+-- TP.lua — Simplified: only Autofarm toggle; speed fixed to 200 while running
+print("TP.lua loaded: simplified Autofarm (speed 200)")
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 local Window = WindUI:CreateWindow({ Title = "Kenscript", Icon = "star", Theme = "Dark", Folder = "MyHub" })
@@ -38,8 +38,8 @@ local waypoints = {
 -- Simple Autofarm toggle only
 local runAutofarm = false
 
--- Fixed speed: 50 while autofarm is running
-local DESIRED_SPEED = 50
+-- Fixed speed: 200 while autofarm is running
+local DESIRED_SPEED = 200
 local SPEED_CAP = 300
 
 local Players = game:GetService("Players")
