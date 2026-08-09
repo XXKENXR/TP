@@ -3,7 +3,7 @@ print("TP.lua loaded: simplified Autofarm (speed 200)")
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 local Window = WindUI:CreateWindow({ Title = "Kenscript", Icon = "star", Theme = "Dark", Folder = "MyHub" })
-local Tab = Window:Tab({ Title = "Autofarm", Icon = "home" })
+local Tab = Window:Tab({ Title = "Main", Icon = "home" })
 
 -- Waypoints list (in order)
 local waypoints = {
