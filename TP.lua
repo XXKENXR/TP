@@ -1,21 +1,11 @@
--- TP.lua - UI fixed: ensure Tab:Toggle/Tab:Slider called with colon so titles appear correctly
-print("TP.lua loaded: fixing UI labels and ensuring controls are created")
+-- TP.lua — Simplified: only Autofarm toggle; speed fixed to 50 while running
+print("TP.lua loaded: simplified Autofarm (speed 50)")
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+local Window = WindUI:CreateWindow({ Title = "Kenscript", Icon = "star", Theme = "Dark", Folder = "MyHub" })
+local Tab = Window:Tab({ Title = "Autofarm", Icon = "home" })
 
-local Window = WindUI:CreateWindow({
-    Title = "Kenscript",
-    Icon = "star",
-    Theme = "Dark",
-    Folder = "MyHub",
-})
-
-local Tab = Window:Tab({
-    Title = "Autofarm",
-    Icon = "home",
-})
-
--- Waypoints list (kept as before)
+-- Waypoints list (in order)
 local waypoints = {
     Vector3.new(-1455, -158, -948), Vector3.new(-1433, -157, -839), Vector3.new(-1431, -122, -728),
     Vector3.new(-1428, -67, -531), Vector3.new(-1449, -68, -486), Vector3.new(-1447, -57, -399),
@@ -45,129 +35,67 @@ local waypoints = {
     Vector3.new(-4840, 619, 1554), Vector3.new(-4980, 619, 1476),
 }
 
--- States
+-- Simple Autofarm toggle only
 local runAutofarm = false
-local obstacleRemovalEnabled = false
-local desiredSpeed = 100
+
+-- Fixed speed: 50 while autofarm is running
+local DESIRED_SPEED = 50
 local SPEED_CAP = 300
 
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
 local humanoidRef = nil
 local originalWalkSpeed = nil
 
--- Helpers
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
-
-local function getCharacter()
-    if not localPlayer then return nil end
-    return localPlayer.Character
-end
-
-local function updateHumanoidRefs()
-    local char = getCharacter()
+local function updateHumanoid()
+    local char = localPlayer and localPlayer.Character
     if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
-    humanoidRef = hum or humanoidRef
-    if humanoidRef and not originalWalkSpeed then originalWalkSpeed = humanoidRef.WalkSpeed end
+    if hum then
+        humanoidRef = hum
+        if not originalWalkSpeed then originalWalkSpeed = humanoidRef.WalkSpeed end
+    end
 end
 
--- Teleport helper
+-- Teleport helper (attempts a few times)
 local function teleportTo(pos)
-    local char = getCharacter() or (localPlayer and localPlayer.CharacterAdded:Wait())
+    local char = localPlayer and (localPlayer.Character or localPlayer.CharacterAdded:Wait())
     if not char then return false end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
     if not hrp then return false end
-    pcall(function()
-        hrp.Velocity = Vector3.new(0,0,0)
-        pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
-        hrp.CFrame = CFrame.new(pos)
-    end)
+    for i = 1, 4 do
+        pcall(function()
+            hrp.Velocity = Vector3.new(0,0,0)
+            pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
+            hrp.CFrame = CFrame.new(pos)
+        end)
+        task.wait(0.05)
+    end
     return true
 end
 
--- Obstacle removal sensors
-local hazardNames = {"lava","kill","spike","trap","acid","death","hazard","damage"}
-local lastTouchedPart = nil
-local lastTouchedTime = 0
-local touchedConn, diedConn, charAddedConn
-
-local function isLikelyHazard(part)
-    if not part or not part:IsA("BasePart") then return false end
-    local name = tostring(part.Name):lower()
-    for _, pat in ipairs(hazardNames) do if name:find(pat) then return true end end
-    return false
-end
-
-local function attachObstacleSensors(char)
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if hrp then
-        if touchedConn then pcall(function() touchedConn:Disconnect() end) end
-        touchedConn = hrp.Touched:Connect(function(part)
-            lastTouchedPart = part; lastTouchedTime = tick()
-        end)
-    end
-    if hum then
-        if diedConn then pcall(function() diedConn:Disconnect() end) end
-        diedConn = hum.Died:Connect(function()
-            if obstacleRemovalEnabled and lastTouchedPart and tick() - lastTouchedTime <= 3 then
-                pcall(function()
-                    if lastTouchedPart and lastTouchedPart.Parent then
-                        lastTouchedPart:Destroy()
-                        print("[Obstaculos] Eliminado parte tocada: ", lastTouchedPart:GetFullName())
-                    end
-                end)
-            end
-        end)
-    end
-end
-
-if localPlayer then
-    if localPlayer.Character then attachObstacleSensors(localPlayer.Character); updateHumanoidRefs() end
-    charAddedConn = localPlayer.CharacterAdded:Connect(function(c)
-        attachObstacleSensors(c)
-        task.spawn(function() task.wait(0.05); updateHumanoidRefs() end)
-    end)
-end
-
--- Scanner thread
-local scannerThread
-local function startScanner()
-    if scannerThread then return end
-    scannerThread = task.spawn(function()
-        while obstacleRemovalEnabled do
-            for _, v in ipairs(workspace:GetDescendants()) do
-                if not obstacleRemovalEnabled then break end
-                if v:IsA("BasePart") and isLikelyHazard(v) then
-                    pcall(function() v:Destroy(); print("[Obstaculos] Eliminado por nombre:", v:GetFullName()) end)
-                end
-            end
-            task.wait(3)
-        end
-        scannerThread = nil
-    end)
-end
-local function stopScanner()
-    obstacleRemovalEnabled = false
-    if scannerThread then scannerThread = nil end
-    if touchedConn then pcall(function() touchedConn:Disconnect() end); touchedConn = nil end
-    if diedConn then pcall(function() diedConn:Disconnect() end); diedConn = nil end
-end
-
--- Speed enforcement
+-- Enforcer that keeps WalkSpeed at DESIRED_SPEED while autofarm
 local enforcerRunning = false
 local function enforceSpeed()
-    if not humanoidRef or not humanoidRef.Parent then return end
-    local want = math.max(1, math.min(SPEED_CAP, math.floor(desiredSpeed)))
-    if humanoidRef.WalkSpeed ~= want then humanoidRef.WalkSpeed = want end
+    if humanoidRef and humanoidRef.Parent and runAutofarm then
+        local want = math.max(1, math.min(SPEED_CAP, math.floor(DESIRED_SPEED)))
+        if humanoidRef.WalkSpeed ~= want then
+            pcall(function() humanoidRef.WalkSpeed = want end)
+        end
+    end
 end
 
--- UI creation using colon syntax and pcall to avoid breaking
-local ok, err
+-- Attach humanoid on spawn
+if localPlayer then
+    if localPlayer.Character then updateHumanoid() end
+    localPlayer.CharacterAdded:Connect(function(c)
+        task.wait(0.05)
+        updateHumanoid()
+    end)
+end
 
--- Autofarm toggle
-ok, err = pcall(function()
+-- Create only Autofarm toggle in UI (use colon syntax)
+pcall(function()
     Tab:Toggle({
         Title = "Autofarm",
         Value = runAutofarm,
@@ -175,15 +103,23 @@ ok, err = pcall(function()
             runAutofarm = state
             print("Autofarm:", state)
             if runAutofarm then
-                updateHumanoidRefs()
+                updateHumanoid()
+                -- apply speed immediately
+                if humanoidRef then
+                    pcall(function() humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, math.floor(DESIRED_SPEED))) end)
+                end
                 -- start enforcer
                 if not enforcerRunning then
                     enforcerRunning = true
                     task.spawn(function()
-                        while runAutofarm do enforceSpeed(); task.wait(0.15) end
+                        while runAutofarm do
+                            enforceSpeed()
+                            task.wait(0.15)
+                        end
                         enforcerRunning = false
                     end)
                 end
+                -- start autofarm loop
                 task.spawn(function()
                     while runAutofarm do
                         for i = 1, #waypoints do
@@ -191,63 +127,32 @@ ok, err = pcall(function()
                             teleportTo(waypoints[i])
                             task.wait(0.2)
                         end
-                        if not runAutofarm then break end
-                        print("Ruta completada; esperando lobby (no autolobby detection in this minimal build).")
-                        task.wait(1)
+                        task.wait(0.5)
                     end
+                    -- restore original speed
                     if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
-                    print("Autofarm detenido")
+                    print("Autofarm stopped")
                 end)
             else
+                -- stopped: restore speed
                 if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
             end
         end,
     })
 end)
-if not ok then warn("Failed to create Autofarm toggle:", err) end
-
--- Velocidad label + slider + buttons
-ok, err = pcall(function()
-    Tab:Label({ Title = "Velocidad" })
-end)
-if not ok then warn("Label not available:", err) end
-
-ok, err = pcall(function()
-    Tab:Slider({
-        Title = "Velocidad",
-        Min = 1,
-        Max = 300,
-        Value = desiredSpeed,
-        Format = function(v) return tostring(math.floor(v)) end,
-        Callback = function(v)
-            desiredSpeed = math.max(1, math.min(300, math.floor(v)))
-            print("Velocidad ajustada a:", desiredSpeed)
-            updateHumanoidRefs(); if humanoidRef then pcall(function() humanoidRef.WalkSpeed = desiredSpeed end) end
-        end,
-    })
-end)
-if not ok then warn("Slider failed, creating +/- buttons fallback:", err)
-    pcall(function()
-        Tab:Button({ Title = "+5", Callback = function() desiredSpeed = math.min(300, desiredSpeed + 5); print("Velocidad:", desiredSpeed); updateHumanoidRefs(); if humanoidRef then pcall(function() humanoidRef.WalkSpeed = desiredSpeed end) end end })
-        Tab:Button({ Title = "-5", Callback = function() desiredSpeed = math.max(1, desiredSpeed - 5); print("Velocidad:", desiredSpeed); updateHumanoidRefs(); if humanoidRef then pcall(function() humanoidRef.WalkSpeed = desiredSpeed end) end end })
-    end)
-end
-
--- Eliminar Obstaculos toggle
-ok, err = pcall(function()
-    Tab:Toggle({
-        Title = "Eliminar Obstaculos",
-        Value = obstacleRemovalEnabled,
-        Callback = function(state)
-            obstacleRemovalEnabled = state
-            print("Eliminar Obstaculos:", state)
-            if obstacleRemovalEnabled then startScanner() else stopScanner() end
-        end,
-    })
-end)
-if not ok then warn("Failed to create Eliminar Obstaculos toggle:", err) end
 
 Tab:Space()
 
--- Final print so user can see script loaded
-print("TP.lua UI (Autofarm / Velocidad / Eliminar Obstaculos) created — recarga con loadstring if you don't see it.")
+-- Keybind K to toggle UI
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+    if UserInputService:GetFocusedTextBox() then return end
+    if input.KeyCode == Enum.KeyCode.K then
+        pcall(function()
+            if type(Window.Toggle) == "function" then Window:Toggle() return end
+            if type(Window.ToggleVisibility) == "function" then Window:ToggleVisibility() return end
+            if type(Window.SetVisible) == "function" then local vis = Window.Visible if type(vis) == "boolean" then Window:SetVisible(not vis) end end
+        end)
+    end
+end)
