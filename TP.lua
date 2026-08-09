@@ -1,5 +1,5 @@
--- TP.lua — Simplified: only Autofarm toggle; speed fixed to 300 while running
-print("TP.lua loaded: simplified Autofarm (speed 300)")
+-- TP.lua — Simplified: only Autofarm toggle; speed fixed to 900 while running
+print("TP.lua loaded: simplified Autofarm (speed 900)")
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 local Window = WindUI:CreateWindow({ Title = "Kenscript", Icon = "star", Theme = "Dark", Folder = "MyHub" })
