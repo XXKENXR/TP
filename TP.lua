@@ -41,7 +41,7 @@ local DESIRED_SPEED = 200
 local SPEED_CAP = 300
 
 -- Target position to hold
-local HOLD_POS = Vector3.new(-1352, 25, 7566)
+local HOLD_POS = Vector3.new(-1352, 26, 7564)
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -136,20 +136,4 @@ pcall(function()
             end
         end,
     })
-end)
-
-Tab:Space()
-
--- Keybind K to toggle UI
-local UserInputService = game:GetService("UserInputService")
-UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent then return end
-    if UserInputService:GetFocusedTextBox() then return end
-    if input.KeyCode == Enum.KeyCode.K then
-        pcall(function()
-            if type(Window.Toggle) == "function" then Window:Toggle() return end
-            if type(Window.ToggleVisibility) == "function" then Window:ToggleVisibility() return end
-            if type(Window.SetVisible) == "function" then local vis = Window.Visible if type(vis) == "boolean" then Window:SetVisible(not vis) end end
-        end)
-    end
 end)
