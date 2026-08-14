@@ -41,7 +41,7 @@ local DESIRED_SPEED = 200
 local SPEED_CAP = 300
 
 -- Target position to hold
-local HOLD_POS = Vector3.new(-1332, 26, 7561)
+local HOLD_POS = Vector3.new(-1352, 25, 7566)
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
