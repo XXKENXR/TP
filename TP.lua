@@ -1,11 +1,11 @@
--- TP.lua — Simplified: only Autofarm toggle; speed fixed to 900 while running
-print("TP.lua loaded: simplified Autofarm (speed 900)")
+-- TP.lua — Autofarm modified: Autofarm toggle teleports to specified coords and holds position
+print("TP.lua loaded: Autofarm now teleports to target and holds position when enabled")
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 local Window = WindUI:CreateWindow({ Title = "Kenscript", Icon = "star", Theme = "Dark", Folder = "MyHub" })
 local Tab = Window:Tab({ Title = "Main", Icon = "home" })
 
--- Waypoints list (in order)
+-- Waypoints list (kept for reference)
 local waypoints = {
     Vector3.new(-1455, -158, -948), Vector3.new(-1433, -157, -839), Vector3.new(-1431, -122, -728),
     Vector3.new(-1428, -67, -531), Vector3.new(-1449, -68, -486), Vector3.new(-1447, -57, -399),
@@ -35,12 +35,13 @@ local waypoints = {
     Vector3.new(-4840, 619, 1554), Vector3.new(-4980, 619, 1476),
 }
 
--- Simple Autofarm toggle only
+-- State
 local runAutofarm = false
-
--- Fixed speed: 200 while autofarm is running
 local DESIRED_SPEED = 200
 local SPEED_CAP = 300
+
+-- Target position to hold
+local HOLD_POS = Vector3.new(-1332, 26, 7561)
 
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
@@ -57,44 +58,59 @@ local function updateHumanoid()
     end
 end
 
--- Teleport helper (attempts a few times)
 local function teleportTo(pos)
     local char = localPlayer and (localPlayer.Character or localPlayer.CharacterAdded:Wait())
     if not char then return false end
     local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
     if not hrp then return false end
-    for i = 1, 4 do
+    for i = 1, 6 do
         pcall(function()
             hrp.Velocity = Vector3.new(0,0,0)
             pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
             hrp.CFrame = CFrame.new(pos)
         end)
-        task.wait(0.05)
+        task.wait(0.03)
+        if (hrp.Position - pos).Magnitude <= 2 then return true end
     end
-    return true
+    pcall(function() hrp.CFrame = CFrame.new(pos) end)
+    return (hrp.Position - pos).Magnitude <= 5
 end
 
--- Enforcer that keeps WalkSpeed at DESIRED_SPEED while autofarm
-local enforcerRunning = false
-local function enforceSpeed()
-    if humanoidRef and humanoidRef.Parent and runAutofarm then
-        local want = math.max(1, math.min(SPEED_CAP, math.floor(DESIRED_SPEED)))
-        if humanoidRef.WalkSpeed ~= want then
-            pcall(function() humanoidRef.WalkSpeed = want end)
+-- Hold position enforcer
+local holdRunning = false
+local function startHoldPosition(pos)
+    if holdRunning then return end
+    holdRunning = true
+    task.spawn(function()
+        local char = localPlayer and localPlayer.Character
+        if not char then holdRunning = false; return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        while holdRunning and hrp and hrp.Parent do
+            pcall(function()
+                hrp.Velocity = Vector3.new(0,0,0)
+                pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0,0,0) end)
+                hrp.CFrame = CFrame.new(pos)
+            end)
+            task.wait(0.08)
+            hrp = hrp.Parent and hrp.Parent:FindFirstChild("HumanoidRootPart") or nil
         end
-    end
+        holdRunning = false
+    end)
+end
+local function stopHoldPosition()
+    holdRunning = false
 end
 
--- Attach humanoid on spawn
+-- Attach humanoid
 if localPlayer then
     if localPlayer.Character then updateHumanoid() end
-    localPlayer.CharacterAdded:Connect(function(c)
+    localPlayer.CharacterAdded:Connect(function()
         task.wait(0.05)
         updateHumanoid()
     end)
 end
 
--- Create only Autofarm toggle in UI (use colon syntax)
+-- Create Autofarm toggle that teleports to HOLD_POS and stays there
 pcall(function()
     Tab:Toggle({
         Title = "Autofarm",
@@ -104,37 +120,18 @@ pcall(function()
             print("Autofarm:", state)
             if runAutofarm then
                 updateHumanoid()
-                -- apply speed immediately
-                if humanoidRef then
-                    pcall(function() humanoidRef.WalkSpeed = math.max(1, math.min(SPEED_CAP, math.floor(DESIRED_SPEED))) end)
-                end
-                -- start enforcer
-                if not enforcerRunning then
-                    enforcerRunning = true
-                    task.spawn(function()
-                        while runAutofarm do
-                            enforceSpeed()
-                            task.wait(0.15)
-                        end
-                        enforcerRunning = false
-                    end)
-                end
-                -- start autofarm loop
-                task.spawn(function()
-                    while runAutofarm do
-                        for i = 1, #waypoints do
-                            if not runAutofarm then break end
-                            teleportTo(waypoints[i])
-                            task.wait(0.2)
-                        end
-                        task.wait(0.5)
-                    end
-                    -- restore original speed
-                    if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
-                    print("Autofarm stopped")
-                end)
+                -- store original speed
+                if humanoidRef and not originalWalkSpeed then originalWalkSpeed = humanoidRef.WalkSpeed end
+                -- attempt teleport to HOLD_POS
+                local ok = teleportTo(HOLD_POS)
+                if not ok then warn("Teleport may have failed; still attempting to hold position") end
+                -- set walkspeed to 0 to avoid movement
+                if humanoidRef then pcall(function() humanoidRef.WalkSpeed = 0 end) end
+                -- start holding position
+                startHoldPosition(HOLD_POS)
             else
-                -- stopped: restore speed
+                -- stop holding and restore speed
+                stopHoldPosition()
                 if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
             end
         end,
