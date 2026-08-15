@@ -12,7 +12,7 @@ local Tab = Window:Tab({ Title = "Main", Icon = "home" })
 
 -- Coordenadas de los 5 mundos
 local MUNDOS = {
-    [1] = Vector3.new(X:X:-9459 Y: 389 Z: -255),
+    [1] = Vector3.new(X: -9461 Y: 389 Z: -256),
     [2] = Vector3.new(-3606, 155, -9378),
     [3] = Vector3.new(-8078, 282, 2741),
     [4] = Vector3.new(-7760, 21, 5741),
