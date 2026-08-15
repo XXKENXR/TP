@@ -1,4 +1,4 @@
--- TP.lua — 5 Mundos (TP + Hold Position)
+-- TP.lua — 5 Mundos + X2 (TP + Hold Position)
 print("TP.lua cargado correctamente")
 
 -- Cargar WindUI de forma más estable
@@ -20,13 +20,14 @@ local Window = WindUI:CreateWindow({
 
 local Tab = Window:Tab({ Title = "Main", Icon = "home" })
 
--- Coordenadas de los 5 mundos
+-- Coordenadas
 local MUNDOS = {
     [1] = Vector3.new(-9461, 389, -256),
     [2] = Vector3.new(-3606, 155, -9378),
     [3] = Vector3.new(-8078, 282, 2741),
     [4] = Vector3.new(-7760, 21, 5741),
     [5] = Vector3.new(-1331, 26, 7561),
+    [6] = Vector3.new(-1350, 26, 7562), -- X2
 }
 
 local Players = game:GetService("Players")
@@ -149,10 +150,12 @@ local function createMundoToggle(mundoNum, title)
     })
 end
 
+-- Toggles
 createMundoToggle(1, "Mundo 1")
 createMundoToggle(2, "Mundo 2")
 createMundoToggle(3, "Mundo 3")
 createMundoToggle(4, "Mundo 4")
 createMundoToggle(5, "Mundo 5")
+createMundoToggle(6, "X2")
 
-print("UI creada - 5 Mundos listos")
+print("UI creada - 5 Mundos + X2 listos")
