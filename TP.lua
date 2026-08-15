@@ -1,4 +1,4 @@
--- TP.lua — Main + Keyboard (Grabar / Ejecutar Ruta - Velocidad Real)
+-- TP.lua — Kenscript Hub
 print("TP.lua cargado correctamente")
 
 local success, WindUI = pcall(function()
@@ -15,8 +15,8 @@ local Window = WindUI:CreateWindow({
     Folder = "MyHub"
 })
 
--- ==================== TAB MAIN ====================
-local TabMain = Window:Tab({ Title = "Farm Monkey", Icon = "home" })
+-- ==================== TAB MONKEY FARM ====================
+local TabMain = Window:Tab({ Title = "Monkey farm", Icon = "home" })
 
 local MUNDOS = {
     [1] = Vector3.new(-9461, 389, -256),
@@ -136,8 +136,9 @@ createMundoToggle(4, "Mundo 4")
 createMundoToggle(5, "Mundo 5")
 createMundoToggle(6, "X2")
 
--- ==================== TAB KEYBOARD ====================
-local TabKeyboard = Window:Tab({ Title = "Ruta Farm", Icon = "Wheel" })
+-- ==================== TAB RUTA FARM ====================
+local TabKeyboard = Window:Tab({ Title = "Ruta Farm", Icon = "keyboard" })
+
 local isRecording = false
 local isPlaying = false
 local recordedPath = {}
@@ -168,7 +169,7 @@ TabKeyboard:Toggle({
                 table.insert(recordedPath, {
                     CFrame = hrp.CFrame,
                     Jump = hum.Jump,
-                    Delta = now - lastTime   -- tiempo real entre puntos
+                    Delta = now - lastTime
                 })
                 lastTime = now
             end)
@@ -182,7 +183,7 @@ TabKeyboard:Toggle({
     end,
 })
 
--- Ejecutar Ruta (velocidad real)
+-- Ejecutar Ruta
 TabKeyboard:Toggle({
     Title = "Ejecutar Ruta",
     Value = false,
@@ -211,7 +212,6 @@ TabKeyboard:Toggle({
                         if hrp and data.CFrame then
                             pcall(function()
                                 hrp.CFrame = data.CFrame
-                                -- No reseteamos velocity para que se sienta más natural
                             end)
                         end
 
@@ -222,9 +222,8 @@ TabKeyboard:Toggle({
                         end
                     end
 
-                    -- Espera el tiempo real que tardó originalmente
                     local waitTime = data.Delta or 0.016
-                    if waitTime > 0.3 then waitTime = 0.05 end -- evita esperas largas raras
+                    if waitTime > 0.3 then waitTime = 0.05 end
                     task.wait(waitTime)
                 end
 
@@ -238,4 +237,4 @@ TabKeyboard:Toggle({
     end,
 })
 
-print("UI lista - Grabar / Ejecutar a velocidad real")
+print("Kenscript Hub cargado")
