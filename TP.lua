@@ -3,7 +3,7 @@ print("TP.lua loaded: 5 Mundos con TP y hold position")
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 local Window = WindUI:CreateWindow({
-    Title = "+1 speed monkey Kenscript",
+    Title = "+1 Speed Monkey Kenscript 🐒",
     Icon = "star",
     Theme = "Dark",
     Folder = "MyHub"
