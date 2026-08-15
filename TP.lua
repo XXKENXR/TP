@@ -3,7 +3,8 @@ print("TP.lua loaded: 5 Mundos con TP y hold position")
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 local Window = WindUI:CreateWindow({
-    Title = "+1 Speed Monkey Kenscript 🐒"
+    Title = "+1 Speed Monkey Kenscript",
+    Icon = "star",
     Theme = "Dark",
     Folder = "MyHub"
 })
@@ -11,7 +12,7 @@ local Tab = Window:Tab({ Title = "Main", Icon = "home" })
 
 -- Coordenadas de los 5 mundos
 local MUNDOS = {
-    [1] = Vector3.new(-9456, 389, -255),
+    [1] = Vector3.new(-9461, 389, -256),
     [2] = Vector3.new(-3606, 155, -9378),
     [3] = Vector3.new(-8078, 282, 2741),
     [4] = Vector3.new(-7760, 21, 5741),
