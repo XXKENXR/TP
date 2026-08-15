@@ -1,4 +1,4 @@
--- TP.lua — Main (Mundos) + Keyboard (Grabar / Ejecutar Ruta)
+-- TP.lua — Main + Keyboard (Grabar / Ejecutar Ruta - Velocidad Real)
 print("TP.lua cargado correctamente")
 
 local success, WindUI = pcall(function()
@@ -139,10 +139,9 @@ createMundoToggle(6, "X2")
 -- ==================== TAB KEYBOARD ====================
 local TabKeyboard = Window:Tab({ Title = "Keyboard", Icon = "keyboard" })
 
--- Variables de grabación
 local isRecording = false
 local isPlaying = false
-local recordedPath = {}          -- aquí se guarda la ruta
+local recordedPath = {}
 local recordConnection = nil
 
 -- Grabar Ruta
@@ -153,10 +152,10 @@ TabKeyboard:Toggle({
         isRecording = state
 
         if state then
-            -- Empezar a grabar
             recordedPath = {}
-            print("Grabando ruta... muévete y salta")
+            print("Grabando ruta... muévete normalmente")
 
+            local lastTime = tick()
             recordConnection = game:GetService("RunService").Heartbeat:Connect(function()
                 if not isRecording then return end
 
@@ -166,24 +165,25 @@ TabKeyboard:Toggle({
                 local hum = char:FindFirstChildOfClass("Humanoid")
                 if not hrp or not hum then return end
 
+                local now = tick()
                 table.insert(recordedPath, {
                     CFrame = hrp.CFrame,
                     Jump = hum.Jump,
-                    Time = tick()
+                    Delta = now - lastTime   -- tiempo real entre puntos
                 })
+                lastTime = now
             end)
         else
-            -- Parar grabación
             if recordConnection then
                 recordConnection:Disconnect()
                 recordConnection = nil
             end
-            print("Ruta guardada! Puntos grabados:", #recordedPath)
+            print("Ruta guardada! Puntos:", #recordedPath)
         end
     end,
 })
 
--- Ejecutar Ruta
+-- Ejecutar Ruta (velocidad real)
 TabKeyboard:Toggle({
     Title = "Ejecutar Ruta",
     Value = false,
@@ -191,19 +191,20 @@ TabKeyboard:Toggle({
         isPlaying = state
 
         if state then
-            if #recordedPath == 0 then
-                warn("No hay ninguna ruta grabada")
+            if #recordedPath < 2 then
+                warn("No hay ruta grabada o es muy corta")
                 return
             end
 
-            print("Ejecutando ruta... (" .. #recordedPath .. " puntos)")
+            print("Ejecutando ruta a velocidad real...")
 
             task.spawn(function()
-                local index = 1
+                for i = 1, #recordedPath do
+                    if not isPlaying then break end
 
-                while isPlaying and index <= #recordedPath do
-                    local data = recordedPath[index]
+                    local data = recordedPath[i]
                     local char = localPlayer.Character
+
                     if char then
                         local hrp = char:FindFirstChild("HumanoidRootPart")
                         local hum = char:FindFirstChildOfClass("Humanoid")
@@ -211,8 +212,7 @@ TabKeyboard:Toggle({
                         if hrp and data.CFrame then
                             pcall(function()
                                 hrp.CFrame = data.CFrame
-                                hrp.Velocity = Vector3.new(0, 0, 0)
-                                pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0) end)
+                                -- No reseteamos velocity para que se sienta más natural
                             end)
                         end
 
@@ -223,8 +223,10 @@ TabKeyboard:Toggle({
                         end
                     end
 
-                    index = index + 1
-                    task.wait(0.03) -- velocidad de reproducción (más bajo = más rápido)
+                    -- Espera el tiempo real que tardó originalmente
+                    local waitTime = data.Delta or 0.016
+                    if waitTime > 0.3 then waitTime = 0.05 end -- evita esperas largas raras
+                    task.wait(waitTime)
                 end
 
                 if isPlaying then
@@ -237,4 +239,4 @@ TabKeyboard:Toggle({
     end,
 })
 
-print("UI lista - Main + Keyboard (Grabar / Ejecutar)")
+print("UI lista - Grabar / Ejecutar a velocidad real")
