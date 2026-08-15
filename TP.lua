@@ -2,7 +2,7 @@
 print("TP.lua loaded: Autofarm now teleports to target and holds position when enabled")
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
-local Window = WindUI:CreateWindow({ Title = "Kenscript", Icon = "star", Theme = "Dark", Folder = "MyHub" })
+local Window = WindUI:CreateWindow({ Title = "+1 speed monkey Kenscript", Icon = "star", Theme = "Dark", Folder = "MyHub" })
 local Tab = Window:Tab({ Title = "Main", Icon = "home" })
 
 -- Waypoints list (kept for reference)
