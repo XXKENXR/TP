@@ -9,14 +9,14 @@ if not success or not WindUI then
 end
 
 local Window = WindUI:CreateWindow({
-    Title = "+1 Speed Monkey Kenscript",
+    Title = "Kenscript Hub",
     Icon = "star",
     Theme = "Dark",
     Folder = "MyHub"
 })
 
 -- ==================== TAB MAIN ====================
-local TabMain = Window:Tab({ Title = "Main", Icon = "home" })
+local TabMain = Window:Tab({ Title = "Farm Monkey", Icon = "home" })
 
 local MUNDOS = {
     [1] = Vector3.new(-9461, 389, -256),
@@ -137,8 +137,7 @@ createMundoToggle(5, "Mundo 5")
 createMundoToggle(6, "X2")
 
 -- ==================== TAB KEYBOARD ====================
-local TabKeyboard = Window:Tab({ Title = "Keyboard", Icon = "keyboard" })
-
+local TabKeyboard = Window:Tab({ Title = "Ruta Farm", Icon = "Wheel" })
 local isRecording = false
 local isPlaying = false
 local recordedPath = {}
