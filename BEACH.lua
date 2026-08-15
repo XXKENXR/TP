@@ -133,7 +133,7 @@ local function createFallbackUI()
     frame.Name = "MainFrame"
     frame.Size = UDim2.new(0, 260, 0, 140)
     frame.Position = UDim2.new(0, 20, 0, 60)
-    frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    frame.BackgroundTransparency = 1
     frame.BorderSizePixel = 0
     frame.Parent = screenGui
 
