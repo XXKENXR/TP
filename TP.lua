@@ -12,7 +12,7 @@ if not success or not WindUI then
 end
 
 local Window = WindUI:CreateWindow({
-    Title = "+1 Speed Monkey KHscript",
+    Title = "+1 Speed Monkey Kenscript",
     Icon = "star",
     Theme = "Dark",
     Folder = "MyHub"
