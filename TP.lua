@@ -1,11 +1,9 @@
--- TP.lua — 5 Mundos + X2 + Keyboard (World 3 Path) + Speed
+-- TP.lua — Main (Mundos) + Keyboard (Grabar / Ejecutar Ruta)
 print("TP.lua cargado correctamente")
 
--- Cargar WindUI
 local success, WindUI = pcall(function()
     return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 end)
-
 if not success or not WindUI then
     WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 end
@@ -26,7 +24,7 @@ local MUNDOS = {
     [3] = Vector3.new(-8078, 282, 2741),
     [4] = Vector3.new(-7760, 21, 5741),
     [5] = Vector3.new(-1331, 26, 7561),
-    [6] = Vector3.new(-1350, 26, 7562), -- X2
+    [6] = Vector3.new(-1350, 26, 7562),
 }
 
 local Players = game:GetService("Players")
@@ -54,32 +52,29 @@ local function teleportTo(pos)
     local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
     if not hrp then return false end
 
-    for i = 1, 8 do
+    for i = 1, 6 do
         pcall(function()
             hrp.Velocity = Vector3.new(0, 0, 0)
             pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0) end)
             hrp.CFrame = CFrame.new(pos)
         end)
-        task.wait(0.04)
+        task.wait(0.03)
         if (hrp.Position - pos).Magnitude <= 3 then return true end
     end
-    pcall(function() hrp.CFrame = CFrame.new(pos) end)
-    return (hrp.Position - pos).Magnitude <= 6
+    return true
 end
 
 local function startHoldPosition(pos)
     if holdRunning and currentHoldPos == pos then return end
     holdRunning = false
-    task.wait(0.05)
+    task.wait(0.03)
     holdRunning = true
     currentHoldPos = pos
 
     task.spawn(function()
         while holdRunning do
             local char = localPlayer and localPlayer.Character
-            if not char then
-                task.wait(0.2)
-            else
+            if char then
                 local hrp = char:FindFirstChild("HumanoidRootPart")
                 if hrp then
                     pcall(function()
@@ -88,8 +83,8 @@ local function startHoldPosition(pos)
                         hrp.CFrame = CFrame.new(pos)
                     end)
                 end
-                task.wait(0.07)
             end
+            task.wait(0.07)
         end
     end)
 end
@@ -105,7 +100,7 @@ if localPlayer then
         task.wait(0.1)
         updateHumanoid()
         if holdRunning and currentHoldPos then
-            task.wait(0.15)
+            task.wait(0.1)
             startHoldPosition(currentHoldPos)
         end
     end)
@@ -119,9 +114,6 @@ local function createMundoToggle(mundoNum, title)
             if state then
                 updateHumanoid()
                 local pos = MUNDOS[mundoNum]
-                if humanoidRef and not originalWalkSpeed then
-                    originalWalkSpeed = humanoidRef.WalkSpeed
-                end
                 teleportTo(pos)
                 if humanoidRef then pcall(function() humanoidRef.WalkSpeed = 0 end) end
                 startHoldPosition(pos)
@@ -144,180 +136,105 @@ createMundoToggle(4, "Mundo 4")
 createMundoToggle(5, "Mundo 5")
 createMundoToggle(6, "X2")
 
--- ==================== SPEED CONTROL ====================
-local speedValue = 16
-
-TabMain:Input({
-    Title = "Speed (1-300)",
-    Value = "16",
-    Placeholder = "Escribe la velocidad...",
-    Callback = function(text)
-        local num = tonumber(text)
-        if num then
-            speedValue = math.clamp(num, 1, 300)
-        end
-    end
-})
-
-TabMain:Button({
-    Title = "Put",
-    Callback = function()
-        updateHumanoid()
-        if humanoidRef then
-            pcall(function()
-                humanoidRef.WalkSpeed = speedValue
-            end)
-            print("Velocidad puesta a:", speedValue)
-        else
-            warn("No se encontró el Humanoid")
-        end
-    end
-})
-
 -- ==================== TAB KEYBOARD ====================
 local TabKeyboard = Window:Tab({ Title = "Keyboard", Icon = "keyboard" })
 
-local WORLD3_PATH = {
-    Vector3.new(-1455, -158, -948),
-    Vector3.new(-1433, -157, -839),
-    Vector3.new(-1431, -122, -728),
-    Vector3.new(-1428, -67, -531),
-    Vector3.new(-1449, -68, -486),
-    Vector3.new(-1447, -57, -399),
-    Vector3.new(-1448, -55, -319),
-    Vector3.new(-1440, -55, -194),
-    Vector3.new(-1446, -55, -65),
-    Vector3.new(-1454, -55, -2),
-    Vector3.new(-1454, -55, 84),
-    Vector3.new(-1454, -25, 84),
-    Vector3.new(-1454, 4, 84),
-    Vector3.new(-1454, 52, 84),
-    Vector3.new(-1454, 92, 91),
-    Vector3.new(-1433, 96, 95),
-    Vector3.new(-1433, 143, 95),
-    Vector3.new(-1433, 188, 95),
-    Vector3.new(-1434, 217, 111),
-    Vector3.new(-1437, 223, 170),
-    Vector3.new(-1439, 225, 230),
-    Vector3.new(-1438, 217, 347),
-    Vector3.new(-1455, 217, 452),
-    Vector3.new(-1446, 217, 533),
-    Vector3.new(-1451, 217, 575),
-    Vector3.new(-1451, 276, 627),
-    Vector3.new(-1451, 366, 627),
-    Vector3.new(-1453, 363, 604),
-    Vector3.new(-1454, 362, 496),
-    Vector3.new(-1356, 362, 495),
-    Vector3.new(-1255, 335, 494),
-    Vector3.new(-1235, 324, 595),
-    Vector3.new(-1232, 331, 657),
-    Vector3.new(-1225, 337, 751),
-    Vector3.new(-1219, 347, 829),
-    Vector3.new(-1289, 356, 837),
-    Vector3.new(-1369, 367, 846),
-    Vector3.new(-1397, 367, 787),
-    Vector3.new(-1408, 381, 725),
-    Vector3.new(-1408, 429, 725),
-    Vector3.new(-1408, 484, 725),
-    Vector3.new(-1408, 558, 725),
-    Vector3.new(-1406, 535, 755),
-    Vector3.new(-1403, 535, 833),
-    Vector3.new(-1405, 535, 1079),
-    Vector3.new(-1405, 535, 1143),
-    Vector3.new(-1404, 535, 1335),
-    Vector3.new(-1412, 535, 1425),
-    Vector3.new(-1487, 511, 1445),
-    Vector3.new(-1575, 511, 1447),
-    Vector3.new(-1656, 511, 1447),
-    Vector3.new(-1662, 511, 1446),
-    Vector3.new(-1733, 511, 1447),
-    Vector3.new(-1802, 511, 1446),
-    Vector3.new(-1878, 511, 1447),
-    Vector3.new(-1959, 511, 1446),
-    Vector3.new(-2064, 445, 1485),
-    Vector3.new(-2134, 445, 1482),
-    Vector3.new(-2274, 441, 1489),
-    Vector3.new(-2409, 443, 1491),
-    Vector3.new(-2498, 449, 1492),
-    Vector3.new(-2668, 445, 1494),
-    Vector3.new(-2884, 476, 1489),
-    Vector3.new(-2952, 554, 1489),
-    Vector3.new(-3024, 638, 1488),
-    Vector3.new(-3175, 675, 1488),
-    Vector3.new(-3328, 663, 1488),
-    Vector3.new(-3450, 645, 1499),
-    Vector3.new(-3615, 622, 1483),
-    Vector3.new(-3677, 619, 1486),
-    Vector3.new(-3831, 619, 1488),
-    Vector3.new(-4082, 619, 1506),
-    Vector3.new(-4140, 619, 1488),
-    Vector3.new(-4175, 618, 1488),
-    Vector3.new(-4626, 619, 1441),
-    Vector3.new(-4840, 619, 1554),
-    Vector3.new(-4980, 619, 1476),
-}
+-- Variables de grabación
+local isRecording = false
+local isPlaying = false
+local recordedPath = {}          -- aquí se guarda la ruta
+local recordConnection = nil
 
-local world3Running = false
-local world3Index = 1
-
-local function isInLobby()
-    local char = localPlayer and localPlayer.Character
-    if not char then return true end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return true end
-
-    local pos = hrp.Position
-    local startPos = WORLD3_PATH[1]
-    if (pos - startPos).Magnitude < 40 or pos.Y < -140 then
-        return true
-    end
-    return false
-end
-
-local function runWorld3Path()
-    task.spawn(function()
-        while world3Running do
-            if isInLobby() then
-                world3Index = 1
-                print("Lobby detectado → reiniciando World 3")
-            end
-
-            local target = WORLD3_PATH[world3Index]
-            if target then
-                teleportTo(target)
-                world3Index = world3Index + 1
-
-                if world3Index > #WORLD3_PATH then
-                    world3Index = 1
-                    print("Path completado → volviendo al inicio")
-                end
-            end
-
-            task.wait(0.35)
-        end
-    end)
-end
-
+-- Grabar Ruta
 TabKeyboard:Toggle({
-    Title = "World 3",
+    Title = "Grabar Ruta",
     Value = false,
     Callback = function(state)
-        world3Running = state
+        isRecording = state
+
         if state then
-            print("World 3 activado")
-            world3Index = 1
-            updateHumanoid()
-            if humanoidRef then
-                pcall(function() humanoidRef.WalkSpeed = 0 end)
-            end
-            runWorld3Path()
+            -- Empezar a grabar
+            recordedPath = {}
+            print("Grabando ruta... muévete y salta")
+
+            recordConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if not isRecording then return end
+
+                local char = localPlayer.Character
+                if not char then return end
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if not hrp or not hum then return end
+
+                table.insert(recordedPath, {
+                    CFrame = hrp.CFrame,
+                    Jump = hum.Jump,
+                    Time = tick()
+                })
+            end)
         else
-            print("World 3 desactivado")
-            if humanoidRef and originalWalkSpeed then
-                pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end)
+            -- Parar grabación
+            if recordConnection then
+                recordConnection:Disconnect()
+                recordConnection = nil
             end
+            print("Ruta guardada! Puntos grabados:", #recordedPath)
         end
     end,
 })
 
-print("UI creada - Main + Keyboard + Speed listos")
+-- Ejecutar Ruta
+TabKeyboard:Toggle({
+    Title = "Ejecutar Ruta",
+    Value = false,
+    Callback = function(state)
+        isPlaying = state
+
+        if state then
+            if #recordedPath == 0 then
+                warn("No hay ninguna ruta grabada")
+                return
+            end
+
+            print("Ejecutando ruta... (" .. #recordedPath .. " puntos)")
+
+            task.spawn(function()
+                local index = 1
+
+                while isPlaying and index <= #recordedPath do
+                    local data = recordedPath[index]
+                    local char = localPlayer.Character
+                    if char then
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+
+                        if hrp and data.CFrame then
+                            pcall(function()
+                                hrp.CFrame = data.CFrame
+                                hrp.Velocity = Vector3.new(0, 0, 0)
+                                pcall(function() hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0) end)
+                            end)
+                        end
+
+                        if hum and data.Jump then
+                            pcall(function()
+                                hum.Jump = true
+                            end)
+                        end
+                    end
+
+                    index = index + 1
+                    task.wait(0.03) -- velocidad de reproducción (más bajo = más rápido)
+                end
+
+                if isPlaying then
+                    print("Ruta terminada")
+                end
+            end)
+        else
+            print("Ejecución detenida")
+        end
+    end,
+})
+
+print("UI lista - Main + Keyboard (Grabar / Ejecutar)")
