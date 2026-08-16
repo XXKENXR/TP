@@ -154,7 +154,7 @@ createMundoToggle(TabX2, 4, "Mundo 4 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 5, "Mundo 5 X2 Wins", MUNDOS_X2)
 
 -- ==================== KEYBOARD ====================
-local TabKeyboard = Window:Tab({ Title = "Keyboard", Icon = "keyboard" })
+local TabKeyboard = Window:Tab({ Title = "Ruta", Icon = "keyboard" })
 
 local isRecording = false
 local isPlaying = false
