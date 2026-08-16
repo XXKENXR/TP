@@ -15,18 +15,6 @@ local Window = WindUI:CreateWindow({
     Folder = "MyHub"
 })
 
--- ==================== TAB MONKEY FARM ====================
-local TabMain = Window:Tab({ Title = "Monkey farm", Icon = "home" })
-
-local MUNDOS = {
-    [1] = Vector3.new(-9461, 389, -256),
-    [2] = Vector3.new(-3606, 155, -9378),
-    [3] = Vector3.new(-8078, 282, 2741),
-    [4] = Vector3.new(-7760, 21, 5741),
-    [5] = Vector3.new(-1331, 26, 7561),
-    [6] = Vector3.new(-1350, 26, 7562),
-}
-
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 local humanoidRef = nil
@@ -106,19 +94,19 @@ if localPlayer then
     end)
 end
 
-local function createMundoToggle(mundoNum, title)
-    TabMain:Toggle({
+local function createMundoToggle(tab, mundoNum, title, positions)
+    tab:Toggle({
         Title = title,
         Value = false,
         Callback = function(state)
             if state then
                 updateHumanoid()
-                local pos = MUNDOS[mundoNum]
+                local pos = positions[mundoNum]
                 teleportTo(pos)
                 if humanoidRef then pcall(function() humanoidRef.WalkSpeed = 0 end) end
                 startHoldPosition(pos)
             else
-                if currentHoldPos == MUNDOS[mundoNum] then
+                if currentHoldPos == positions[mundoNum] then
                     stopHoldPosition()
                     if humanoidRef and originalWalkSpeed then
                         pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end)
@@ -129,12 +117,41 @@ local function createMundoToggle(mundoNum, title)
     })
 end
 
-createMundoToggle(1, "Mundo 1")
-createMundoToggle(2, "Mundo 2")
-createMundoToggle(3, "Mundo 3")
-createMundoToggle(4, "Mundo 4")
-createMundoToggle(5, "Mundo 5")
-createMundoToggle(6, "X2")
+-- ==================== TAB MONKEY FARM ====================
+local TabMain = Window:Tab({ Title = "Monkey farm", Icon = "home" })
+
+local MUNDOS = {
+    [1] = Vector3.new(-9461, 389, -256),
+    [2] = Vector3.new(-3606, 155, -9378),
+    [3] = Vector3.new(-8078, 282, 2741),
+    [4] = Vector3.new(-7760, 21, 5741),
+    [5] = Vector3.new(-1331, 26, 7561),
+    [6] = Vector3.new(-1350, 26, 7562),
+}
+
+createMundoToggle(TabMain, 1, "Mundo 1", MUNDOS)
+createMundoToggle(TabMain, 2, "Mundo 2", MUNDOS)
+createMundoToggle(TabMain, 3, "Mundo 3", MUNDOS)
+createMundoToggle(TabMain, 4, "Mundo 4", MUNDOS)
+createMundoToggle(TabMain, 5, "Mundo 5", MUNDOS)
+createMundoToggle(TabMain, 6, "X2", MUNDOS)
+
+-- ==================== TAB MONKEY FARM X2 ====================
+local TabX2 = Window:Tab({ Title = "Monkey Farm X2", Icon = "zap" })
+
+local MUNDOS_X2 = {
+    [1] = Vector3.new(-9458, 389, -189),
+    [2] = Vector3.new(-3671, 155, -9378),
+    [3] = Vector3.new(-8096, 282, 2741),
+    [4] = Vector3.new(-7778, 21, 5741),
+    [5] = Vector3.new(-1349, 26, 7562),
+}
+
+createMundoToggle(TabX2, 1, "Mundo 1 X2 Wins", MUNDOS_X2)
+createMundoToggle(TabX2, 2, "Mundo 2 X2 Wins", MUNDOS_X2)
+createMundoToggle(TabX2, 3, "Mundo 3 X2 Wins", MUNDOS_X2)
+createMundoToggle(TabX2, 4, "Mundo 4 X2 Wins", MUNDOS_X2)
+createMundoToggle(TabX2, 5, "Mundo 5 X2 Wins", MUNDOS_X2)
 
 -- ==================== TAB RUTA FARM ====================
 local TabKeyboard = Window:Tab({ Title = "Ruta Farm", Icon = "keyboard" })
@@ -144,7 +161,6 @@ local isPlaying = false
 local recordedPath = {}
 local recordConnection = nil
 
--- Grabar Ruta
 TabKeyboard:Toggle({
     Title = "Grabar Ruta",
     Value = false,
@@ -183,7 +199,6 @@ TabKeyboard:Toggle({
     end,
 })
 
--- Ejecutar Ruta
 TabKeyboard:Toggle({
     Title = "Ejecutar Ruta",
     Value = false,
