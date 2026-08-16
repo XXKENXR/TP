@@ -1,5 +1,5 @@
 -- TP.lua — Kenscript Hub
-print("TP.lua cargado correctamente")
+print("Kenscript Hub cargado")
 
 local success, WindUI = pcall(function()
     return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -117,7 +117,7 @@ local function createMundoToggle(tab, mundoNum, title, positions)
     })
 end
 
--- ==================== TAB MONKEY FARM ====================
+-- ==================== MONKEY FARM ====================
 local TabMain = Window:Tab({ Title = "Monkey farm", Icon = "home" })
 
 local MUNDOS = {
@@ -136,7 +136,7 @@ createMundoToggle(TabMain, 4, "Mundo 4", MUNDOS)
 createMundoToggle(TabMain, 5, "Mundo 5", MUNDOS)
 createMundoToggle(TabMain, 6, "X2", MUNDOS)
 
--- ==================== TAB MONKEY FARM X2 ====================
+-- ==================== MONKEY FARM X2 ====================
 local TabX2 = Window:Tab({ Title = "Monkey Farm X2", Icon = "zap" })
 
 local MUNDOS_X2 = {
@@ -153,7 +153,7 @@ createMundoToggle(TabX2, 3, "Mundo 3 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 4, "Mundo 4 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 5, "Mundo 5 X2 Wins", MUNDOS_X2)
 
--- ==================== TAB KEYBOARD ====================
+-- ==================== KEYBOARD ====================
 local TabKeyboard = Window:Tab({ Title = "Keyboard", Icon = "keyboard" })
 
 local isRecording = false
@@ -162,25 +162,6 @@ local recordedPath = {}
 local recordConnection = nil
 local deleteObstacles = false
 
--- Detectar lobby (ajusta si hace falta)
-local function isInLobby()
-    local char = localPlayer and localPlayer.Character
-    if not char then return true end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return true end
-
-    local pos = hrp.Position
-    -- Si no hay ruta, no se puede comparar
-    if #recordedPath == 0 then return false end
-
-    local startPos = recordedPath[1].CFrame.Position
-    -- Si está cerca del inicio o muy abajo = lobby / respawn
-    if (pos - startPos).Magnitude < 50 or pos.Y < -100 then
-        return true
-    end
-    return false
-end
-
 -- Borrar Obstáculos
 TabKeyboard:Toggle({
     Title = "Borrar Obstáculos",
@@ -188,24 +169,16 @@ TabKeyboard:Toggle({
     Callback = function(state)
         deleteObstacles = state
         if state then
-            print("Borrar Obstáculos activado")
+            print("Borrar Obstáculos ON")
             task.spawn(function()
                 while deleteObstacles do
                     for _, obj in pairs(workspace:GetDescendants()) do
                         if obj:IsA("BasePart") then
                             local name = string.lower(obj.Name)
-                            if string.find(name, "kill") or 
-                               string.find(name, "death") or 
-                               string.find(name, "trap") or 
-                               string.find(name, "spike") or 
-                               string.find(name, "lava") or 
-                               string.find(name, "damage") or
-                               string.find(name, "hurt") or
-                               string.find(name, "die") or
-                               string.find(name, "obstacle") or
-                               string.find(name, "boss") or
-                               string.find(name, "wave") or
-                               string.find(name, "ola") then
+                            if string.find(name, "kill") or string.find(name, "death") or string.find(name, "trap")
+                            or string.find(name, "spike") or string.find(name, "lava") or string.find(name, "damage")
+                            or string.find(name, "hurt") or string.find(name, "die") or string.find(name, "obstacle")
+                            or string.find(name, "boss") or string.find(name, "wave") or string.find(name, "ola") then
                                 pcall(function() obj:Destroy() end)
                             end
                         end
@@ -214,30 +187,28 @@ TabKeyboard:Toggle({
                 end
             end)
         else
-            print("Borrar Obstáculos desactivado")
+            print("Borrar Obstáculos OFF")
         end
     end,
 })
 
--- Grabar Ruta (velocidad 200)
+-- Grabar Ruta
 TabKeyboard:Toggle({
     Title = "Grabar Ruta",
     Value = false,
     Callback = function(state)
         isRecording = state
-
         if state then
             recordedPath = {}
             updateHumanoid()
             if humanoidRef then
                 pcall(function() humanoidRef.WalkSpeed = 200 end)
             end
-            print("Grabando ruta a 200 de velocidad...")
+            print("Grabando ruta a 200...")
 
             local lastTime = tick()
             recordConnection = game:GetService("RunService").Heartbeat:Connect(function()
                 if not isRecording then return end
-
                 local char = localPlayer.Character
                 if not char then return end
                 local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -260,76 +231,62 @@ TabKeyboard:Toggle({
             if humanoidRef and originalWalkSpeed then
                 pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end)
             end
-            print("Ruta guardada! Puntos:", #recordedPath)
+            print("Ruta guardada. Puntos:", #recordedPath)
         end
     end,
 })
 
--- Ejecutar Ruta (bucle + detecta lobby)
+-- Ejecutar Ruta (bucle)
 TabKeyboard:Toggle({
     Title = "Ejecutar Ruta",
     Value = false,
     Callback = function(state)
         isPlaying = state
 
-        if state then
-            if #recordedPath < 2 then
-                warn("No hay ruta grabada o es muy corta")
-                return
-            end
-
-            print("Ejecutando ruta en bucle...")
-
-            task.spawn(function()
-                while isPlaying do
-                    -- Si detecta lobby, reinicia
-                    if isInLobby() then
-                        print("Lobby detectado → reiniciando ruta")
-                    end
-
-                    for i = 1, #recordedPath do
-                        if not isPlaying then break end
-
-                        -- Si en medio del path vuelve al lobby, reinicia
-                        if isInLobby() and i > 5 then
-                            print("Lobby detectado a mitad de ruta → reiniciando")
-                            break
-                        end
-
-                        local data = recordedPath[i]
-                        local char = localPlayer.Character
-
-                        if char then
-                            local hrp = char:FindFirstChild("HumanoidRootPart")
-                            local hum = char:FindFirstChildOfClass("Humanoid")
-
-                            if hrp and data.CFrame then
-                                pcall(function()
-                                    hrp.CFrame = data.CFrame
-                                end)
-                            end
-
-                            if hum and data.Jump then
-                                pcall(function()
-                                    hum.Jump = true
-                                end)
-                            end
-                        end
-
-                        local waitTime = data.Delta or 0.016
-                        if waitTime > 0.3 then waitTime = 0.05 end
-                        task.wait(waitTime)
-                    end
-
-                    if isPlaying then
-                        print("Ruta terminada → repitiendo...")
-                        task.wait(0.3)
-                    end
-                end
-            end)
-        else
-            print("Ejecución detenida")
+        if not state then
+            print("Ejecutar Ruta OFF")
+            return
         end
+
+        if #recordedPath < 2 then
+            warn("No hay ruta grabada")
+            return
+        end
+
+        print("Ejecutando ruta en bucle... Puntos:", #recordedPath)
+
+        task.spawn(function()
+            while isPlaying do
+                for i = 1, #recordedPath do
+                    if not isPlaying then break end
+
+                    local data = recordedPath[i]
+                    local char = localPlayer.Character
+                    if char then
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+
+                        if hrp and data.CFrame then
+                            pcall(function()
+                                hrp.CFrame = data.CFrame
+                            end)
+                        end
+                        if hum and data.Jump then
+                            pcall(function() hum.Jump = true end)
+                        end
+                    end
+
+                    local waitTime = data.Delta or 0.016
+                    if waitTime > 0.25 then waitTime = 0.04 end
+                    task.wait(waitTime)
+                end
+
+                if isPlaying then
+                    print("Ruta terminada → repitiendo...")
+                    task.wait(0.4)
+                end
+            end
+        end)
     end,
 })
 
@@ -346,9 +303,9 @@ TabKeyboard:Toggle({
                 recordConnection:Disconnect()
                 recordConnection = nil
             end
-            print("Ruta eliminada. Ya puedes grabar una nueva.")
+            print("Ruta eliminada")
         end
     end,
 })
 
-print("Kenscript Hub cargado")
+print("Kenscript Hub listo")
