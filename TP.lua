@@ -153,14 +153,51 @@ createMundoToggle(TabX2, 3, "Mundo 3 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 4, "Mundo 4 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 5, "Mundo 5 X2 Wins", MUNDOS_X2)
 
--- ==================== TAB RUTA FARM ====================
-local TabKeyboard = Window:Tab({ Title = "Ruta Farm", Icon = "keyboard" })
+-- ==================== TAB KEYBOARD ====================
+local TabKeyboard = Window:Tab({ Title = "Keyboard", Icon = "keyboard" })
 
 local isRecording = false
 local isPlaying = false
 local recordedPath = {}
 local recordConnection = nil
+local deleteObstacles = false
 
+-- Borrar Obstáculos
+TabKeyboard:Toggle({
+    Title = "Borrar Obstáculos",
+    Value = false,
+    Callback = function(state)
+        deleteObstacles = state
+        if state then
+            print("Borrar Obstáculos activado")
+            task.spawn(function()
+                while deleteObstacles do
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj:IsA("BasePart") then
+                            local name = string.lower(obj.Name)
+                            if string.find(name, "kill") or 
+                               string.find(name, "death") or 
+                               string.find(name, "trap") or 
+                               string.find(name, "spike") or 
+                               string.find(name, "lava") or 
+                               string.find(name, "damage") or
+                               string.find(name, "hurt") or
+                               string.find(name, "die") or
+                               string.find(name, "obstacle") then
+                                pcall(function() obj:Destroy() end)
+                            end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        else
+            print("Borrar Obstáculos desactivado")
+        end
+    end,
+})
+
+-- Grabar Ruta (con velocidad 200)
 TabKeyboard:Toggle({
     Title = "Grabar Ruta",
     Value = false,
@@ -169,7 +206,11 @@ TabKeyboard:Toggle({
 
         if state then
             recordedPath = {}
-            print("Grabando ruta... muévete normalmente")
+            updateHumanoid()
+            if humanoidRef then
+                pcall(function() humanoidRef.WalkSpeed = 200 end)
+            end
+            print("Grabando ruta a 200 de velocidad...")
 
             local lastTime = tick()
             recordConnection = game:GetService("RunService").Heartbeat:Connect(function()
@@ -194,11 +235,15 @@ TabKeyboard:Toggle({
                 recordConnection:Disconnect()
                 recordConnection = nil
             end
+            if humanoidRef and originalWalkSpeed then
+                pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end)
+            end
             print("Ruta guardada! Puntos:", #recordedPath)
         end
     end,
 })
 
+-- Ejecutar Ruta
 TabKeyboard:Toggle({
     Title = "Ejecutar Ruta",
     Value = false,
