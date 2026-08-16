@@ -162,6 +162,25 @@ local recordedPath = {}
 local recordConnection = nil
 local deleteObstacles = false
 
+-- Detectar lobby (ajusta si hace falta)
+local function isInLobby()
+    local char = localPlayer and localPlayer.Character
+    if not char then return true end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return true end
+
+    local pos = hrp.Position
+    -- Si no hay ruta, no se puede comparar
+    if #recordedPath == 0 then return false end
+
+    local startPos = recordedPath[1].CFrame.Position
+    -- Si está cerca del inicio o muy abajo = lobby / respawn
+    if (pos - startPos).Magnitude < 50 or pos.Y < -100 then
+        return true
+    end
+    return false
+end
+
 -- Borrar Obstáculos
 TabKeyboard:Toggle({
     Title = "Borrar Obstáculos",
@@ -183,12 +202,15 @@ TabKeyboard:Toggle({
                                string.find(name, "damage") or
                                string.find(name, "hurt") or
                                string.find(name, "die") or
-                               string.find(name, "obstacle") then
+                               string.find(name, "obstacle") or
+                               string.find(name, "boss") or
+                               string.find(name, "wave") or
+                               string.find(name, "ola") then
                                 pcall(function() obj:Destroy() end)
                             end
                         end
                     end
-                    task.wait(0.5)
+                    task.wait(0.4)
                 end
             end)
         else
@@ -197,7 +219,7 @@ TabKeyboard:Toggle({
     end,
 })
 
--- Grabar Ruta (con velocidad 200)
+-- Grabar Ruta (velocidad 200)
 TabKeyboard:Toggle({
     Title = "Grabar Ruta",
     Value = false,
@@ -243,7 +265,7 @@ TabKeyboard:Toggle({
     end,
 })
 
--- Ejecutar Ruta
+-- Ejecutar Ruta (bucle + detecta lobby)
 TabKeyboard:Toggle({
     Title = "Ejecutar Ruta",
     Value = false,
@@ -256,43 +278,75 @@ TabKeyboard:Toggle({
                 return
             end
 
-            print("Ejecutando ruta a velocidad real...")
+            print("Ejecutando ruta en bucle...")
 
             task.spawn(function()
-                for i = 1, #recordedPath do
-                    if not isPlaying then break end
-
-                    local data = recordedPath[i]
-                    local char = localPlayer.Character
-
-                    if char then
-                        local hrp = char:FindFirstChild("HumanoidRootPart")
-                        local hum = char:FindFirstChildOfClass("Humanoid")
-
-                        if hrp and data.CFrame then
-                            pcall(function()
-                                hrp.CFrame = data.CFrame
-                            end)
-                        end
-
-                        if hum and data.Jump then
-                            pcall(function()
-                                hum.Jump = true
-                            end)
-                        end
+                while isPlaying do
+                    -- Si detecta lobby, reinicia
+                    if isInLobby() then
+                        print("Lobby detectado → reiniciando ruta")
                     end
 
-                    local waitTime = data.Delta or 0.016
-                    if waitTime > 0.3 then waitTime = 0.05 end
-                    task.wait(waitTime)
-                end
+                    for i = 1, #recordedPath do
+                        if not isPlaying then break end
 
-                if isPlaying then
-                    print("Ruta terminada")
+                        -- Si en medio del path vuelve al lobby, reinicia
+                        if isInLobby() and i > 5 then
+                            print("Lobby detectado a mitad de ruta → reiniciando")
+                            break
+                        end
+
+                        local data = recordedPath[i]
+                        local char = localPlayer.Character
+
+                        if char then
+                            local hrp = char:FindFirstChild("HumanoidRootPart")
+                            local hum = char:FindFirstChildOfClass("Humanoid")
+
+                            if hrp and data.CFrame then
+                                pcall(function()
+                                    hrp.CFrame = data.CFrame
+                                end)
+                            end
+
+                            if hum and data.Jump then
+                                pcall(function()
+                                    hum.Jump = true
+                                end)
+                            end
+                        end
+
+                        local waitTime = data.Delta or 0.016
+                        if waitTime > 0.3 then waitTime = 0.05 end
+                        task.wait(waitTime)
+                    end
+
+                    if isPlaying then
+                        print("Ruta terminada → repitiendo...")
+                        task.wait(0.3)
+                    end
                 end
             end)
         else
             print("Ejecución detenida")
+        end
+    end,
+})
+
+-- Eliminar Ruta
+TabKeyboard:Toggle({
+    Title = "Eliminar Ruta",
+    Value = false,
+    Callback = function(state)
+        if state then
+            recordedPath = {}
+            isPlaying = false
+            isRecording = false
+            if recordConnection then
+                recordConnection:Disconnect()
+                recordConnection = nil
+            end
+            print("Ruta eliminada. Ya puedes grabar una nueva.")
         end
     end,
 })
