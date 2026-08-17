@@ -12,7 +12,8 @@ local Window = WindUI:CreateWindow({
     Title = "Kenscript Hub",
     Icon = "star",
     Theme = "Dark",
-    Folder = "MyHub"
+    Folder = "MyHub",
+    ToggleKey = Enum.KeyCode.K   -- Minimizar / Maximizar con K
 })
 
 local Players = game:GetService("Players")
@@ -154,7 +155,7 @@ createMundoToggle(TabX2, 4, "Mundo 4 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 5, "Mundo 5 X2 Wins", MUNDOS_X2)
 
 -- ==================== KEYBOARD ====================
-local TabKeyboard = Window:Tab({ Title = "Ruta", Icon = "keyboard" })
+local TabKeyboard = Window:Tab({ Title = "Keyboard", Icon = "keyboard" })
 
 local isRecording = false
 local isPlaying = false
@@ -255,4 +256,4 @@ TabKeyboard:Toggle({
     end,
 })
 
-print("Kenscript Hub listo")
+print("Kenscript Hub listo - Tecla K para minimizar/maximizar")
