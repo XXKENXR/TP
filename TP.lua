@@ -1,4 +1,4 @@
--- TP.lua — Kenscript Hub
+-- Kenscript Hub
 print("Kenscript Hub cargado")
 
 local success, WindUI = pcall(function()
@@ -13,7 +13,7 @@ local Window = WindUI:CreateWindow({
     Icon = "star",
     Theme = "Dark",
     Folder = "MyHub",
-    ToggleKey = Enum.KeyCode.K   -- Minimizar / Maximizar con K
+    ToggleKey = Enum.KeyCode.K
 })
 
 local Players = game:GetService("Players")
@@ -40,7 +40,6 @@ local function teleportTo(pos)
     if not char then return false end
     local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
     if not hrp then return false end
-
     for i = 1, 6 do
         pcall(function()
             hrp.Velocity = Vector3.new(0, 0, 0)
@@ -59,7 +58,6 @@ local function startHoldPosition(pos)
     task.wait(0.03)
     holdRunning = true
     currentHoldPos = pos
-
     task.spawn(function()
         while holdRunning do
             local char = localPlayer and localPlayer.Character
@@ -118,9 +116,8 @@ local function createMundoToggle(tab, mundoNum, title, positions)
     })
 end
 
--- ==================== MONKEY FARM ====================
+-- Monkey farm
 local TabMain = Window:Tab({ Title = "Monkey farm", Icon = "home" })
-
 local MUNDOS = {
     [1] = Vector3.new(-9461, 389, -256),
     [2] = Vector3.new(-3606, 155, -9378),
@@ -129,7 +126,6 @@ local MUNDOS = {
     [5] = Vector3.new(-1331, 26, 7561),
     [6] = Vector3.new(-1350, 26, 7562),
 }
-
 createMundoToggle(TabMain, 1, "Mundo 1", MUNDOS)
 createMundoToggle(TabMain, 2, "Mundo 2", MUNDOS)
 createMundoToggle(TabMain, 3, "Mundo 3", MUNDOS)
@@ -137,9 +133,8 @@ createMundoToggle(TabMain, 4, "Mundo 4", MUNDOS)
 createMundoToggle(TabMain, 5, "Mundo 5", MUNDOS)
 createMundoToggle(TabMain, 6, "X2", MUNDOS)
 
--- ==================== MONKEY FARM X2 ====================
+-- Monkey Farm X2
 local TabX2 = Window:Tab({ Title = "Monkey Farm X2", Icon = "zap" })
-
 local MUNDOS_X2 = {
     [1] = Vector3.new(-9458, 389, -189),
     [2] = Vector3.new(-3671, 155, -9378),
@@ -147,22 +142,19 @@ local MUNDOS_X2 = {
     [4] = Vector3.new(-7778, 21, 5741),
     [5] = Vector3.new(-1349, 26, 7562),
 }
-
 createMundoToggle(TabX2, 1, "Mundo 1 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 2, "Mundo 2 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 3, "Mundo 3 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 4, "Mundo 4 X2 Wins", MUNDOS_X2)
 createMundoToggle(TabX2, 5, "Mundo 5 X2 Wins", MUNDOS_X2)
 
--- ==================== KEYBOARD ====================
+-- Keyboard
 local TabKeyboard = Window:Tab({ Title = "Keyboard", Icon = "keyboard" })
-
 local isRecording = false
 local isPlaying = false
 local recordedPath = {}
 local recordConnection = nil
 
--- Grabar Ruta
 TabKeyboard:Toggle({
     Title = "Grabar Ruta",
     Value = false,
@@ -171,11 +163,7 @@ TabKeyboard:Toggle({
         if state then
             recordedPath = {}
             updateHumanoid()
-            if humanoidRef then
-                pcall(function() humanoidRef.WalkSpeed = 200 end)
-            end
-            print("Grabando ruta a 200...")
-
+            if humanoidRef then pcall(function() humanoidRef.WalkSpeed = 200 end) end
             local lastTime = tick()
             recordConnection = game:GetService("RunService").Heartbeat:Connect(function()
                 if not isRecording then return end
@@ -184,76 +172,43 @@ TabKeyboard:Toggle({
                 local hrp = char:FindFirstChild("HumanoidRootPart")
                 local hum = char:FindFirstChildOfClass("Humanoid")
                 if not hrp or not hum then return end
-
                 local now = tick()
-                table.insert(recordedPath, {
-                    CFrame = hrp.CFrame,
-                    Jump = hum.Jump,
-                    Delta = now - lastTime
-                })
+                table.insert(recordedPath, { CFrame = hrp.CFrame, Jump = hum.Jump, Delta = now - lastTime })
                 lastTime = now
             end)
         else
-            if recordConnection then
-                recordConnection:Disconnect()
-                recordConnection = nil
-            end
-            if humanoidRef and originalWalkSpeed then
-                pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end)
-            end
+            if recordConnection then recordConnection:Disconnect() recordConnection = nil end
+            if humanoidRef and originalWalkSpeed then pcall(function() humanoidRef.WalkSpeed = originalWalkSpeed end) end
             print("Ruta guardada. Puntos:", #recordedPath)
         end
     end,
 })
 
--- Ejecutar Ruta (solo una vez)
 TabKeyboard:Toggle({
     Title = "Ejecutar Ruta",
     Value = false,
     Callback = function(state)
         isPlaying = state
-
-        if not state then
-            print("Ejecutar Ruta OFF")
-            return
-        end
-
-        if #recordedPath < 2 then
-            warn("No hay ruta grabada")
-            return
-        end
-
-        print("Ejecutando ruta... Puntos:", #recordedPath)
-
+        if not state then return end
+        if #recordedPath < 2 then warn("No hay ruta grabada") return end
         task.spawn(function()
             for i = 1, #recordedPath do
                 if not isPlaying then break end
-
                 local data = recordedPath[i]
                 local char = localPlayer.Character
                 if char then
                     local hrp = char:FindFirstChild("HumanoidRootPart")
                     local hum = char:FindFirstChildOfClass("Humanoid")
-
-                    if hrp and data.CFrame then
-                        pcall(function()
-                            hrp.CFrame = data.CFrame
-                        end)
-                    end
-                    if hum and data.Jump then
-                        pcall(function() hum.Jump = true end)
-                    end
+                    if hrp and data.CFrame then pcall(function() hrp.CFrame = data.CFrame end) end
+                    if hum and data.Jump then pcall(function() hum.Jump = true end) end
                 end
-
                 local waitTime = data.Delta or 0.016
                 if waitTime > 0.25 then waitTime = 0.04 end
                 task.wait(waitTime)
             end
-
-            print("Ruta terminada")
             isPlaying = false
         end)
     end,
 })
 
-print("Kenscript Hub listo - Tecla K para minimizar/maximizar")
+print("Kenscript Hub listo")
