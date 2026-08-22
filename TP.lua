@@ -124,7 +124,7 @@ local MUNDOS = {
     [3] = Vector3.new(-8078, 282, 2741),
     [4] = Vector3.new(-7760, 21, 5741),
     [5] = Vector3.new(-1331, 26, 7561),
-    [6] = Vector3.new(-1350, 26, 7562),
+    [6] = Vector3.new(-2829, 286, 7824),
 }
 createMundoToggle(TabMain, 1, "Mundo 1", MUNDOS)
 createMundoToggle(TabMain, 2, "Mundo 2", MUNDOS)
